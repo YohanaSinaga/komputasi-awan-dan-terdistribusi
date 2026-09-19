@@ -14,9 +14,9 @@
 
 network is always reliable, no need fo retry
 
-**Kenapa ini keliru:** Dalam sistem terdistribusi, komunikasi antarservice  bergantung pd jaringan shg permintaan tidak selalu berhasil. Komunikasi dapat mengalami kegagalan atau gangguan sementara. Karena itu, sistem perlu mengantisipasi kemungkinan permintaaan tidak mendapatkan respons dan tidak boleh menganggap jaringan selalu dapat diandalkan.
+**Kenapa ini keliru:** Dalam sistem terdistribusi, komunikasi antarservice  bergantung pd jaringan shg permintaan tidak selalu berhasil. Komunikasi dapat mengalami kegagalan atau gangguan sementara. Krn itu, sistem perlu mengantisipasi kemungkinan permintaaan tidak mendapatkan respons dan tidak boleh menganggap jaringan selalu dapat diandalkan.
 
-**Dampak ke FoodGo:** Ketika terjadi gangguan komunikasi antara service, permintaan dari satu modul dapat gagal tanpa adanya percobaan ulang. Dalam kondisi trafik tinggi, kegagalan komunikasi dapat membuat proses pemesanan atau pembayaran terganggu. Hal ini dapat menyebabkan sebagian permintaan pengguna gagal, sementara aplikasi secara keseluruhan sudah berada dalam kondisi terbebani.
+**Dampak ke FoodGo:** Ketikaa terjadi gangguan komunikasi antara service, permintaan dari satu modul dapat gagal tanpa adanya percobaan ulang. Dalam kondisi trafik tinggi, kegagalan komunikasi dapat membuat proses pemesanan atau pembayaran terganggu. Hal ini dapat menyebabkan sebagian permintaan pengguna gagal, sementara aplikasi secara keseluruhan sudah berada dalam kondisi terbebani.
 
 **Solusi desain awal:** FoodGo dapat menambahkan timeout dan mekanisme retry dengan jumlah percobaan yang terbatas. Jeda antarpercobaan juga dapat dibuat bertahap ( backoff ) agar sistem tidak langsung mengirim permintaan berulang ketika service sedang mengalami masalah. Circuit breaker juga dapat digunakan untuk menghentikan sementara permintaan ke service yang terus mengalami kegagalan.
 
