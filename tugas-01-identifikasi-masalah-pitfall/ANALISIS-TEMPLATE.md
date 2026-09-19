@@ -24,9 +24,17 @@ network is always reliable, no need fo retry
 
 ---
 
-## Pitfall 2: [nama pitfall] — ditulis oleh [nama]
+## Pitfall 2: Latency Is Zero — ditulis oleh Yohana Sinaga
 
-(ulangi struktur di atas)
+**Bukti di skenario:** tidak ada *timeout* sama sekali pada pemanggilan antarservice dan secara khusus modul pesanan memanggil modul pembayaran dan menunggu tanpa batas waktu.
+
+**Kenapa ini keliru:** Dalam sistem terdistribusi, komunikasi antarservice membutuhkan waktu. Respons dari service lain tidak selalu datang dalam waktu yang sama karena dapat dipengaruhi oleh kondisi service dan tingginya jumlah permintaan. Oleh karena itu, sistem tidak boleh menganggap respons antarservice selalu tersedia dengan cepat.
+
+**Dampak ke FoodGo:** Ketika modul Payment membutuhkan waktu lama untuk memberikan respons, modul Order akan tetap menunggu karena tidak memiliki  timeout . Jika banyak permintaan Order mengalami kondisi yang sama saat trafik sedang tinggi, semakin banyak proses yang tertahan menunggu Payment. Resource server kemudian ikut terbebani, sehingga aplikasi menjadi semakin lambat dan beberapa permintaan pengguna akhirnya mengalami  timeout . Kondisi ini dapat ikut berkontribusi terhadap server yang mengalami  crash 
+
+**Solusi desain awal:** FoodGo dapat memberikan batas waktu ( *timeout* ) pada pemanggilan dari modul Order ke modul Payment. Dengan demikian, Order tidak akan menunggu Payment tanpa batas. Untuk proses tertentu yang tidak harus langsung mendapatkan respons, FoodGo juga dapat menggunakan komunikasi asynchronous sehingga Order tidak harus terus menunggu proses dari Payment selesai
+
+**Trade-off:** Timeout yang terlalu singkat dapat membuat permintaan dianggap gagal padahal Payment sebenarnya masih memprosesnya. Sementara itu, penggunaan komunikasi asynchronous membuat alur sistem menjadi lebih kompleks karena hasil proses tidak selalu langsung diterima oleh modul yang meminta.
 
 ---
 
