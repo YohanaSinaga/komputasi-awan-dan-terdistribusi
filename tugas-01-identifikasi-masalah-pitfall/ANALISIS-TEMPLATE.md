@@ -8,9 +8,9 @@
 | Yohana Sinaga      | 103072400009 | Latency is zero                        |
 | Laura Chyndearni S | 103072400049 | Single Point of Failure / skalabilitas |
 
-## Pitfall 1: [nama pitfall] — ditulis oleh [nama]
+## Pitfall 1: The network is reliable — ditulis oleh YOHANNA PURNOMO
 
-**Bukti di skenario:** 
+**Bukti di skenario:**
 
 network is always reliable, no need fo retry
 
