@@ -36,11 +36,11 @@ network is always reliable, no need fo retry
 
 Skenario menyebutkan:
 
-> “Saat trafik naik, satu server yang menangani semua modul (pesanan, pembayaran, notifikasi kurir) kewalahan karena semuanya berjalan di satu proses monolitik yang sama.”
+ “Saat trafik naik, satu server yang menangani semua modul (pesanan, pembayaran, notifikasi kurir) kewalahan karena semuanya berjalan di satu proses monolitik yang sama.”
 
 Skenario juga menyebutkan:
 
-> “Server backend kadang *crash* total dan perlu di-restart manual.”
+ “Server backend kadang *crash* total dan perlu di-restart manual.”
 
 Dari dua bagian tersebut, terlihat bahwa **semua modul FoodGo masih bergantung pada satu server dan satu proses**.
 
