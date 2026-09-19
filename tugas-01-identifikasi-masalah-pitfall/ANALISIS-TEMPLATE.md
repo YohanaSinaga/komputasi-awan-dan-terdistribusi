@@ -70,19 +70,19 @@ Jika server sampai mengalami *crash*, modul pesanan, pembayaran, dan notifikasi 
 
 Akibatnya, pengguna dapat mengalami masalah seperti:
 
-1. **Tidak dapat membuat pesanan**
-2. **Proses pembayaran terganggu**
-3. **Notifikasi kurir tidak berjalan**
-4. **Aplikasi menjadi lambat**
-5. **Layanan harus menunggu sampai server di-restart**
+1. Tidak dapat membuat pesanan
+2. Proses pembayaran terganggu
+3. Notifikasi kurir tidak berjalan
+4. Aplikasi menjadi lambat
+5. Layanan harus menunggu sampai server di-restart
 
 Jadi, masalah pada satu server dapat berdampak ke seluruh fungsi utama FoodGo.
 
 **Solusi Desain Awal:** FoodGo dapat mulai memisahkan modul utama menjadi beberapa service, misalnya:
 
-- **Order Service** — menangani proses pemesanan.
-- **Payment Service** — menangani proses pembayaran.
-- **Notification Service** — menangani notifikasi kepada pengguna dan kurir.
+- Order Service — menangani proses pemesanan.
+- Payment Service — menangani proses pembayaran.
+- Notification Service — menangani notifikasi kepada pengguna dan kurir.
 
 Dengan pemisahan tersebut, setiap service dapat dikelola dan ditingkatkan kapasitasnya secara lebih mandiri.
 
@@ -98,11 +98,11 @@ Pada sistem monolitik, semua modul berada dalam satu proses sehingga komunikasi 
 
 Akibatnya, FoodGo perlu menangani masalah tambahan seperti:
 
-- **Timeout**
-- **Kegagalan komunikasi antarservice**
-- **Monitoring**
-- **Deployment masing-masing service**
-- **Pengelolaan koneksi antarservice**
+- Timeout
+- Kegagalan komunikasi antarservice
+- Monitoring
+- Deployment masing-masing service
+- Pengelolaan koneksi antarservice
 
 Selain itu, pemisahan servicetidak otomatis menghilangkan semua Single Point of Failure. Jika beberapa service masih bergantung pada satu komponen yang sama, komponen tersebut tetap dapat menjadi titik kegagalan.
 
@@ -110,4 +110,4 @@ Karena itu, menurut analisis kami, pemisahan service sebaiknya dilakukansecara b
 
 ## Kesimpulan Kelompok
 
-Dari ketiga pitfall yang ditemukan, FoodGo membutuhkan sistem yang lebih decoupled agar gangguan jaringan, keterlambatan antarmodul, atau beban pada satu modul tidak langsung mengganggu seluruh sistem. Setiap layanan perlu dapat berkomunikasi dengan lebih terkontrol dan tidak saling bergantung secara berlebihan. Hal ini menjadi dasar untuk  Tugas **2 ,** yaitu merancang arsitektur menggunakan SOA atau kombinasi SOA dengan Publish-Subscribe agar modul Pesanan, Pembayaran, Kurir/Notifikasi, dan Katalog Resto dapat berjalan lebih terpisah dan fleksibel.
+Dari ketiga pitfall yang ditemukan, FoodGo membutuhkan sistem yang lebih decoupled agar gangguan jaringan, keterlambatan antarmodul, atau beban pada satu modul tidak langsung mengganggu seluruh sistem. Setiap layanan perlu dapat berkomunikasi dengan lebih terkontrol dan tidak saling bergantung secara berlebihan. Hal ini menjadi dasar untuk  Tugas 2 **,** yaitu merancang arsitektur menggunakan SOA atau kombinasi SOA dengan Publish-Subscribe agar modul Pesanan, Pembayaran, Kurir/Notifikasi, dan Katalog Resto dapat berjalan lebih terpisah dan fleksibel.
