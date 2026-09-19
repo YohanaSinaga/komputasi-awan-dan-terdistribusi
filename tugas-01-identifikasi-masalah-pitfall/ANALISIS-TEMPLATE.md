@@ -2,11 +2,11 @@
 
 **Kelompok:** [nama kelompok]
 
-| Nama               | NIM          | Kontribusi                       |
-| ------------------ | ------------ | -------------------------------- |
-| Yohanna Purnomo    | 103072400127 | [pitfall/bagian yang dikerjakan] |
-| Yohana Sinaga      | 103072400009 | [pitfall/bagian yang dikerjakan] |
-| Laura Chyndearni S | 103072400049 | [pitfall/bagian yang dikerjakan] |
+| Nama               | NIM          | Kontribusi                             |
+| ------------------ | ------------ | -------------------------------------- |
+| Yohanna Purnomo    | 103072400127 | The network is reliable                |
+| Yohana Sinaga      | 103072400009 | Latency is zero                        |
+| Laura Chyndearni S | 103072400049 | Single Point of Failure / skalabilitas |
 
 ## Pitfall 1: [nama pitfall] — ditulis oleh [nama]
 
