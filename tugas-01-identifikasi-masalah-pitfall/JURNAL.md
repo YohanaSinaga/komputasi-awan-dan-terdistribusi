@@ -28,13 +28,11 @@
 
 **Yohana Sinaga mengomentari analisis Yohanna Purnomo**
 
-- Yohana memberikan masukan bahwa bagian dampak dari tidak adanya timeout sebaiknya tidak hanya ditulis bahwa sistem menjadi lambat. Menurut Yohana, perlu dijelaskan juga bagaimana request yang terus menunggu dapat menggunakan resource server dan akhirnya memengaruhi request lainnya.
-Setelah mendapat masukan tersebut, Yohanna memperjelas bagian dampak dengan menjelaskan bahwa semakin banyak request yang menunggu Payment Service, semakin banyak resource yang digunakan. Hal tersebut dapat menyebabkan sistem semakin lambat dan berpotensi mengalami crash.
+- Yohana memberikan masukan bahwa bagian dampak dari tidak adanya timeout sebaiknya tidak hanya ditulis bahwa sistem menjadi lambat. Menurut Yohana, perlu dijelaskan juga bagaimana request yang terus menunggu dapat menggunakan resource server dan akhirnya memengaruhi request lainnya. Setelah mendapat masukan tersebut, Yohanna memperjelas bagian dampak dengan menjelaskan bahwa semakin banyak request yang menunggu Payment Service, semakin banyak resource yang digunakan. Hal tersebut dapat menyebabkan sistem semakin lambat dan berpotensi mengalami crash.
 
 **Yohanna Purnomo mengomentari analisis Laura Chyndearni Saragih**
 
-- Yohanna memberikan masukan bahwa bagian tentang satu server sebaiknya menjelaskan dua masalah, yaitu scalability dan Single Point of Failure. Menurut Yohanna, perlu dijelaskan bahwa ketika server yang digunakan bersama mengalami crash, beberapa modul FoodGo juga dapat ikut terganggu.
-- Setelah mendapat masukan tersebut, Laura menambahkan penjelasan mengenai hubungan satu server dengan Single Point of Failure serta dampaknya terhadap modul Order, Payment, dan Notification.
+- Yohanna memberikan masukan bahwa bagian tentang satu server sebaiknya menjelaskan dua masalah, yaitu scalability dan Single Point of Failure. Menurut Yohanna, perlu dijelaskan bahwa ketika server yang digunakan bersama mengalami crash, beberapa modul FoodGo juga dapat ikut terganggu. Setelah mendapat masukan tersebut, Laura menambahkan penjelasan mengenai hubungan satu server dengan Single Point of Failure serta dampaknya terhadap modul Order, Payment, dan Notification.
 
   
 **Laura Chyndearni Saragih mengomentari analisis Yohana Sinaga**
