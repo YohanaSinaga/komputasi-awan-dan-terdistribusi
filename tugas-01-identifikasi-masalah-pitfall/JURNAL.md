@@ -28,7 +28,8 @@
 
 - Yohanna Purnomo mengomentari analisis Yohana Sinaga: bahwa bagian Latency is zero perlu dibedakan dari masalah The network is reliable. Fokusnya harus pada waktu respons dan kondisi modul Order yang menunggu Payment tanpa batas waktu, bukan pada kegagalan jaringan.
 - Yohana Sinaga mengomentari analisis Yohanna Purnomo bahwa bukti dari skenario harus tetap menggunakan bagian network is always reliable, no need for retry supaya hubungan antara pitfall dan skenario terlihat jelas.
-### Laura Chyndearni Saragih mengomentari analisis Yohana Sinaga
+  
+**Laura Chyndearni Saragih mengomentari analisis Yohana Sinaga**
 Laura memberikan masukan bahwa solusi retry sebaiknya tidak hanya menjelaskan bahwa request akan dicoba kembali. Perlu dijelaskan juga risiko jika retry dilakukan terlalu banyak.
 
 Yohana kemudian menambahkan penggunaan backoff dan batas jumlah retry sebagai bagian dari solusi. Pada bagian tradeoff juga ditambahkan bahwa retry yang berlebihan dapat membuat beban pada service semakin tinggi, terutama ketika service tersebut memang sedang mengalami gangguan.
