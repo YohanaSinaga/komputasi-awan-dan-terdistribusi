@@ -33,8 +33,9 @@
 
 **Yohanna Purnomo mengomentari analisis Laura Chyndearni Saragih**
 
--
--
+- Yohanna memberikan masukan bahwa bagian tentang satu server sebaiknya menjelaskan dua masalah, yaitu scalability dan Single Point of Failure. Menurut Yohanna, perlu dijelaskan bahwa ketika server yang digunakan bersama mengalami crash, beberapa modul FoodGo juga dapat ikut terganggu.
+- Setelah mendapat masukan tersebut, Laura menambahkan penjelasan mengenai hubungan satu server dengan Single Point of Failure serta dampaknya terhadap modul Order, Payment, dan Notification.
+
   
 **Laura Chyndearni Saragih mengomentari analisis Yohana Sinaga**
 
