@@ -38,76 +38,40 @@ network is always reliable, no need fo retry
 
 ---
 
-## Pitfall 3: *Single Point of Failure / Skalabilitas* — ditulis oleh **Laura Chyndearni Saragih**
+## Pitfall 3: Single Point of Failure dan Scalability — ditulis oleh Laura Chyndearni Saragih
 
-**Bukti di Skenario:** Skenario menyebutkan:
+**Bukti di skenario:**  
 
- “Saat trafik naik, satu server yang menangani semua modul (pesanan, pembayaran, notifikasi kurir) kewalahan karena semuanya berjalan di satu proses monolitik yang sama.”
+Saat trafik naik, satu server menangani semua modul FoodGo, yaitu pesanan, pembayaran, dan notifikasi kurir. Semua modul tersebut berjalan dalam satu proses monolitik yang sama. Akibatnya, server menjadi kewalahan ketika jumlah trafik meningkat.
 
-Skenario juga menyebutkan:
+**Kenapa ini keliru:**  
 
- “Server backend kadang *crash* total dan perlu di-restart manual.”
+Satu server yg menangani banyak modul membuat semua modul menggunakan resource yg sama. Ketika jumlah pengguna dan pesanannya meningkat, beban yg diterima server jg ikut meningkat. Hal ini menunjukkan adanya masalah scalability karena sistem belum mampu menangani peningkatan beban dengan baik.
 
-Dari dua bagian tersebut, terlihat bahwa semua modul FoodGo masih bergantung pada satu server dan satu proses.
+Selain itu, penggunaan satu server untuk banyak fungsi juga membuat server tersebut menjadi Single point of failure yg artinya jika server tersebut mengalami masalah/crash, beberapa fungsi FoodGo yg berjalan di dalamnya dapat ikut terganggu.
 
-**Kenapa Ini Keliru?:** Menjalankan semua modul dalam satu proses dan satu server membuat modul pesanan, pembayaran, dan notifikasi kurir menggunakan resource yang sama, seperti CPU, memori, dan kapasitas pemrosesan.
+**Dampak ke FoodGo:**  
 
-Satu server memiliki kapasitas yang terbatas. Ketika jumlah permintaan meningkat, semua modul harus berbagi resource yang tersedia. Akibatnya, peningkatan beban pada satu bagian dapat memengaruhi kinerja bagian lainnya.
+Ketika jam makan sian/promo besar, jumlah pesanan meningkat. Order, Payment, dan Notification semuanya menggunakan resource dari server yang sama. Server akhirnya kewalahan sehingga aplikasi menjadi lambat dan beberapa request mengalami timeout.
 
-Selain itu, jika server tersebut mengalami gangguan atau *crash*, semua modul yang bergantung pada server tersebut dapat ikut berhenti. Kondisi ini dapat disebut sebagai Single Point of Failure, karena kegagalan pada satu komponen dapat menyebabkan layanan lain ikut terganggu.
+Jika bebannya semakin tinggi sampai server crash bukan hanya satu fungsi yang tergangg tetapi modul pesanan, pembayaran, dan notifikasi yang berada dalam proses yang sama jg dapat ikut berhenti. Akibatnya, satu masalah pada server dapat mempengaruhi sebagian besar sistem FoodGo.
 
-Masalah ini juga berkaitan dengan skalabilitas. Jika hanya satu modul yang mengalami peningkatan beban, FoodGo tidak dapat dengan mudah menambah kapasitas modul tersebut tanpa mempertimbangkan seluruh aplikasi yang masih berjalan dalam proses yang sama.
+**Solusi desain awal:**  
 
-**Dampak ke FoodGo:** Saat terjadi lonjakan pesanan pada jam makan siang atau ketika promo besar, jumlah permintaan yang masuk ke FoodGo meningkat.
+FoodGo dapat mulai memisahkan modul berdasarkan fungsi menjadi service/proses yang terpisah. Misalnya Order Service, Payment Service, dan Notification Service tidak semuanya dijalankan dalam satu proses yang sama.
 
-Karena Order, Payment, dan Notification berjalan pada server yang sama, semua modul menggunakan resource yang sama. Ketika jumlah request semakin banyak, server menjadi semakin terbebani.
+Dengan pemisahan tersebut, service yang memiliki beban paling tinggi dapat ditingkatkan kapasitasnya secara terpisah sesuai kebutuhan. FoodGo jg tidak terlalu bergantung pada satu proses untuk menjalankan seluruh fungsi utama aplikasi.
 
-Alur masalahnya dapat digambarkan secara sederhana:
+**Trade-off:**  
 
-Trafik meningkat → request bertambah → semua modul menggunakan resource server yang sama → server kewalahan → aplikasi menjadi lambat → server dapat crash
-
-Jika server sampai mengalami *crash*, modul pesanan, pembayaran, dan notifikasi kurir ikut terdampak karena semuanya berada dalam server dan proses yang sama.
-
-Akibatnya, pengguna dapat mengalami masalah seperti:
-
-1. Tidak dapat membuat pesanan
-2. Proses pembayaran terganggu
-3. Notifikasi kurir tidak berjalan
-4. Aplikasi menjadi lambat
-5. Layanan harus menunggu sampai server di-restart
-
-Jadi, masalah pada satu server dapat berdampak ke seluruh fungsi utama FoodGo.
-
-**Solusi Desain Awal:** FoodGo dapat mulai memisahkan modul utama menjadi beberapa service, misalnya:
-
-- Order Service — menangani proses pemesanan.
-- Payment Service — menangani proses pembayaran.
-- Notification Service — menangani notifikasi kepada pengguna dan kurir.
-
-Dengan pemisahan tersebut, setiap service dapat dikelola dan ditingkatkan kapasitasnya secara lebih mandiri.
-
-Contohnya, ketika terjadi promo besar dan beban pada Order Service meningkat, FoodGo dapat menambah kapasitas Order Service tanpa harus menambah kapasitas seluruh modul lainnya.
-
-Pemisahan service juga dapat mengurangi dampak kegagalan. Jika Notification Service mengalami masalah, Order Service dan Payment Service tidak harus langsung berhenti, selama ketergantungan antarservice dirancang dengan baik.
-
-Untuk tim kecil seperti FoodGo, pemisahan ini dapat dilakukan secara bertahap, tidak harus langsung mengubah seluruh aplikasi menjadi banyak service sekaligus.
-
-**Trade-off:** Pemisahan service dapat membantu meningkatkan skalabilitas, tetapi membuat sistem menjadi lebih kompleks dibandingkan monolitik.
-
-Pada sistem monolitik, semua modul berada dalam satu proses sehingga komunikasi antarbagian relatif sederhana. Setelah dipisahkan menjadi beberapa service, komunikasi harus dilakukan melalui jaringan.
-
-Akibatnya, FoodGo perlu menangani masalah tambahan seperti:
-
-- Timeout
-- Kegagalan komunikasi antarservice
-- Monitoring
-- Deployment masing-masing service
-- Pengelolaan koneksi antarservice
-
-Selain itu, pemisahan servicetidak otomatis menghilangkan semua Single Point of Failure. Jika beberapa service masih bergantung pada satu komponen yang sama, komponen tersebut tetap dapat menjadi titik kegagalan.
-
-Karena itu, menurut analisis kami, pemisahan service sebaiknya dilakukansecara bertahap dan disertai pengelolaan komunikasi antarservice yang baik. Dengan cara tersebut, FoodGo dapat meningkatkan skalabilitas tanpa menambah kompleksitas sistem secara berlebihan.
+Pemisahan service dapat membantu mengurangi ketergantungan pada satu server dan membuat sistem lebih mudah dikembangkan sesuai kebutuhan. Namun, sistem menjadi lebih kompleks karena service harus berkomunikasi melalui jaringan. Tim juga perlu menangani monitoring, deployment, dan kemungkinan terjadinya kegagalan komunikasi antar servicnya.
 
 ## Kesimpulan Kelompok
 
-Dari ketiga pitfall yang ditemukan, FoodGo membutuhkan sistem yang lebih decoupled agar gangguan jaringan, keterlambatan antarmodul, atau beban pada satu modul tidak langsung mengganggu seluruh sistem. Setiap layanan perlu dapat berkomunikasi dengan lebih terkontrol dan tidak saling bergantung secara berlebihan. Hal ini menjadi dasar untuk  Tugas 2 **,** yaitu merancang arsitektur menggunakan SOA atau kombinasi SOA dengan Publish-Subscribe agar modul Pesanan, Pembayaran, Kurir/Notifikasi, dan Katalog Resto dapat berjalan lebih terpisah dan fleksibel.
+Berdasarkan hasil diskusi, kami menemukan bahwa masalah FoodGo bukan hanya karena jumlah pengguna nya saja yg meningkat, tetapi juga karena ada beberapa kesalahan di perancangan sistemnya. Masalah yang kami temukan yaitu menganggap jaringan selalu reliable, tidak adanya timeout saat service saling berkomunikasi, dan satu server yang menangani banyak fungsi sekaligus.
+
+Dari masalah tersebut, kami mengusulkan beberapa perbaikan seperti menggunakan retry dengan batas percobaan dan backoff, memberikan timeout pada komunikasi antarservice, serta memisahkan service Order, Payment, dan Notification. Dengan begitu, sistem tidak terlalu bergantung pada satu bagian saja dan lebih siap ketika jumlah request meningkat.
+
+Namun, setiap solusi juga memiliki kekurangannya. Misalnya, retry yang terlalu banyak bisa menambah beban, sedangkan pemisahan service membuat sistem lebih kompleks karena service harus saling berkomunikasi melalui jaringan. Jadi, perbaikannya tetap perlu disesuaikan dengan kondisi sistem FoodGo.
+
+Secara garis besar, FoodGo perlu memiliki sistem yang lebih siap menghadapi gangguan dan peningkatan trafik. Hasil analisis ini nantinya dapat menjadi dasar untuk merancang arsitektur FoodGo yang lebih baik pada Tugas 2.
