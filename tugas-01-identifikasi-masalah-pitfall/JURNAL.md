@@ -43,9 +43,7 @@
 
 ## Hasil Akhir Diskusi 
 
-Setelah melakukan pembahasan dan review silang, kami menyepakati tiga masalah utama yang akan digunakan dalam analisis, yaitu The Network is Reliable, tidak adanya timeout pada komunikasi antar service, serta Single Point of Failure dan masalah scalability akibat penggunaan satu server atau proses untuk beberapa modul.
-
-Kami kemudian menyusun solusi berdasarkan masalah masing-masing. Solusi yang dipilih adalah timeout, retry dengan backoff, circuit breaker, dan pemisahan modul secara bertahap. Kami juga menambahkan tradeoff dari setiap solusi agar analisis tidak hanya menjelaskan keuntungan tetapi juga risiko/kekurangannya.
+Setelah melakukan pembahasan dan review silang, kami menyepakati tiga masalah utama yang akan digunakan dalam analisis, yaitu **The Network is Reliable**, tidak adanya **timeout pada komunikasi antar-service**, serta **Single Point of Failure dan masalah scalability** akibat penggunaan satu server atau proses untuk beberapa modul. Kami kemudian menyusun solusi berdasarkan masalah masing-masing. Solusi yang dipilih adalah timeout, retry dengan backoff, circuit breaker, dan pemisahan modul secara bertahap. Kami juga menambahkan trade-off dari setiap solusi agar analisis tidak hanya menjelaskan keuntungan tetapi juga risiko atau kekurangannya.
 
 ## Log Penggunaan AI (Level 2)
 
