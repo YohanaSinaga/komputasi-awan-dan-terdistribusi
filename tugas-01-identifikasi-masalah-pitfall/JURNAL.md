@@ -9,15 +9,35 @@
 - Poin diskusi: Membahas tiga pitfall pada skenario FoodGo, yaitu The network is reliable, Latency is zero, dan Single Point of Failure/skalabilitas.
 - Perbedaan pendapat (jika ada): Tidak ada perbedaan pendapat yang signifikan. Kelompok kami berdiskusi untuk memastikan pembagian pitfall dan pembahasannya tidak tumpang tindih.
 
-## [Tanggal diskusi 2]
+## 20 September 2026
+- **Peserta:** Yohana Sinaga, Yohanna Purnomo, Laura Chyndearni Saragih
+  
+- **Poin diskusi:**
+  - Kami membahas solusi yang cocok untuk masing-masing masalah.
+  - Untuk masalah jaringan, kami membahas penggunaan retry dengan backoff agar request yang gagal karena gangguan sementara dapat dicoba kembali.
+  - Untuk masalah tidak adanya timeout, kami membahas penggunaan timeout agar Order Service nya tidak menunggu Payment Service tanpa batas.
+  - Kami juga membahas circuit breaker sebagai tambahan untuk mencegah request terus dikirim ke service yang sedang bermasalah.
+  - Untuk masalah satu server, kami membahas pemisahan modul menjadi service/proses yg berbeda agar semua fungsi tidak bergantung pada satu server.
+  - Kami membahas trade off dari setiap solusi supaya analisis tidak hanya berisi kelebihan solusi.
 
-- ...
+- **Perbedaan pendapat (jika ada):**
 
+  - Kami sempat membahas apakah retry saja sudah cukup untuk mengatasi masalah jaringan. Setelah didiskusikan, kami menyimpulkan bahwa retry tetap perlu dibatasi dan menggunakan jeda karena terlalu banyak retry dapat menambah beban ketika service sedang bermasalah.
+    
 ## Review Silang
 
 - Yohanna Purnomo mengomentari analisis Yohana Sinaga: bahwa bagian Latency is zero perlu dibedakan dari masalah The network is reliable. Fokusnya harus pada waktu respons dan kondisi modul Order yang menunggu Payment tanpa batas waktu, bukan pada kegagalan jaringan.
 - Yohana Sinaga mengomentari analisis Yohanna Purnomo bahwa bukti dari skenario harus tetap menggunakan bagian network is always reliable, no need for retry supaya hubungan antara pitfall dan skenario terlihat jelas.
-- Laura mengomentari analisis Yohanna dan Yohana kalau dampak dari kedua masalah tersebut juga dapat semakin parah karena semua modul masih bisa berjalan pada satu server. Jadi, masalah komunikasi antarservice dan masalah beban server bisa saling memperburuk kondisi FoodGo-nya.
+### Laura Chyndearni Saragih mengomentari analisis Yohana Sinaga
+Laura memberikan masukan bahwa solusi retry sebaiknya tidak hanya menjelaskan bahwa request akan dicoba kembali. Perlu dijelaskan juga risiko jika retry dilakukan terlalu banyak.
+
+Yohana kemudian menambahkan penggunaan backoff dan batas jumlah retry sebagai bagian dari solusi. Pada bagian tradeoff juga ditambahkan bahwa retry yang berlebihan dapat membuat beban pada service semakin tinggi, terutama ketika service tersebut memang sedang mengalami gangguan.
+
+## Hasil Akhir Diskusi 
+
+Setelah melakukan pembahasan dan review silang, kami menyepakati tiga masalah utama yang akan digunakan dalam analisis, yaitu The Network is Reliable, tidak adanya timeout pada komunikasi antar service, serta Single Point of Failure dan masalah scalability akibat penggunaan satu server atau proses untuk beberapa modul.
+
+Kami kemudian menyusun solusi berdasarkan masalah masing-masing. Solusi yang dipilih adalah timeout, retry dengan backoff, circuit breaker, dan pemisahan modul secara bertahap. Kami juga menambahkan tradeoff dari setiap solusi agar analisis tidak hanya menjelaskan keuntungan tetapi juga risiko/kekurangannya.
 
 ## Log Penggunaan AI (Level 2)
 
