@@ -28,8 +28,8 @@
 
 **Yohana Sinaga mengomentari analisis Yohanna Purnomo**
 
--
--
+- Yohana memberikan masukan bahwa bagian dampak dari tidak adanya timeout sebaiknya tidak hanya ditulis bahwa sistem menjadi lambat. Menurut Yohana, perlu dijelaskan juga bagaimana request yang terus menunggu dapat menggunakan resource server dan akhirnya memengaruhi request lainnya.
+Setelah mendapat masukan tersebut, Yohanna memperjelas bagian dampak dengan menjelaskan bahwa semakin banyak request yang menunggu Payment Service, semakin banyak resource yang digunakan. Hal tersebut dapat menyebabkan sistem semakin lambat dan berpotensi mengalami crash.
 
 **Yohanna Purnomo mengomentari analisis Laura Chyndearni Saragih**
 
