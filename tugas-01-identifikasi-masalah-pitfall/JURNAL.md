@@ -32,14 +32,16 @@
 
 **Yohanna Purnomo mengomentari analisis Laura Chyndearni Saragih**
 
-- Yohanna memberikan masukan bahwa bagian tentang satu server sebaiknya menjelaskan dua masalah, yaitu scalability dan Single Point of Failure. Menurut Yohanna, perlu dijelaskan bahwa ketika server yang digunakan bersama mengalami crash, beberapa modul FoodGo juga dapat ikut terganggu. Setelah mendapat masukan tersebut, Laura menambahkan penjelasan mengenai hubungan satu server dengan Single Point of Failure serta dampaknya terhadap modul Order, Payment, dan Notification.
+- Yohanna memberikan masukan bahwa bagian tentang satu server perlu menjelaskan dua masalah, yaitu scalability dan Single Point of Failure.
+- Kami membahas bahwa ketika satu server menangani Order, Payment, dan Notification sekaligus, peningkatan trafik membuat semua modul menggunakan resource yang sama.
+- Laura kemudian menambahkan bahwa jika server tersebut mengalami crash, beberapa modul yang berjalan di dalamnya juga dapat ikut berhenti.
 
   
 **Laura Chyndearni Saragih mengomentari analisis Yohana Sinaga**
 
-- Laura memberikan masukan bahwa solusi retry sebaiknya tidak hanya menjelaskan bahwa request akan dicoba kembali. Perlu dijelaskan juga risiko jika retry dilakukan terlalu banyak.
-
-- Yohana kemudian menambahkan penggunaan backoff dan batas jumlah retry sebagai bagian dari solusi. Pada bagian tradeoff juga ditambahkan bahwa retry yang berlebihan dapat membuat beban pada service semakin tinggi, terutama ketika service tersebut memang sedang mengalami gangguan.
+- Laura memberikan masukan bahwa dampak dari tidak adanya timeout perlu dijelaskan lebih detail, terutama mengenai request yang tertahan ketika Payment Service lambat memberikan respons.
+- Kami kemudian membahas bahwa semakin banyak request yang menunggu, semakin banyak resource server yang digunakan.
+- Yohana memperjelas bagian dampak dengan menjelaskan hubungan antara Payment Service yang lambat, request yang tertahan, penggunaan resource, dan aplikasi yang menjadi semakin lambat.
 
 ## Hasil Akhir Diskusi 
 
