@@ -1,4 +1,3 @@
-
 # Tugas 2 - Perancangan Arsitektur FoodGo
 
 ## Kelompok
@@ -21,6 +20,89 @@ Bagian transaksi inti, yaitu **Pesanan - Pembayaran**, tetap menggunakan pola SO
 
 Sebaliknya, **koordinasi lintas layanan** seperti resto, kurir, dan notifikasi pelanggan menggunakan Pub-Sub melalui *message broker*. Dengan cara ini, Order Service tidak perlu mengetahui secara langsung siapa saja yang menerima event yang dikirimkannya Catalog Resto Service, Courier Service, dan Notification Service masing-masing berlangganan event yang relevan bagi mereka.
 
+## 2. Komponen Sistem
+
+Komponen yang digunakan dalam rancangan FoodGo:
+
+1. API Gateway
+2. Order Service / Service Pesanan
+3. Payment Service / Service Pembayaran
+4. Catalog Resto Service / Service Katalog Resto
+5. Courier Service / Service Kurir
+6. Notification Service / Service Notifikasi
+7. Message Broker
+
+### Fungsi masing-masing komponen
+
+**API Gateway**
+
+Menjadi pintu masuk permintaan dari pelanggan menuju service yang sesuai, termasuk permintaan membuat pesanan dan permintaan melihat menu restoo.
+
+**Order Service**
+
+Menangani pembuatan pesanan, memicu proses pembayaran, dan menyimpan/memperbarui status pesanan berdasarkan event yang diterimanya dari Message Broker.
+
+**Payment Service**
+
+Menangani proses pembayarann dan memberikan hasil pembayaran kepada Order Service secara langsung (sinkron).
+
+**Catalog Resto Service**
+
+Mengelola informasi restoran dan menu yang tersedia (diakses langsung lewat API Gateway), sekaligus menjadi penerima notifikasi pesanan baru dengan berlangganan event dari Message Broker setelah pesanan dibayar.
+
+**Courier Service**
+
+Menangani pencarian dan penugasan kurir. Service ini baru bertindak setelah resto mengonfirmasi menerima pesanan, bukan bersamaan dengan pembayaran selesai.
+
+**Notification Service**
+
+Mengirimkan informasi atau perubahan status kepada pihak yang membutuhkan, seperti kurir (tugas baru) dan pelanggan (status kurir).
+
+**Message Broker**
+
+Menjadi perantara untuk komunikasi berbasis event antar service yang menggunakan pola Publish-Subscribe, sehingga Order Service tidak perlu memanggil Catalog Resto Service, Courier Service, atau Notification Service secara langsung.
+
+## Diagram Arsitektur
+
+```mermaid
+graph LR
+    Customer[Pelanggan]
+    Gateway[API Gateway]
+    Order[Order Service]
+    Payment[Payment Service]
+    Catalog[Catalog Resto Service]
+    Broker[Message Broker]
+    Courier[Courier Service]
+    Notification[Notification Service]
+
+    Customer -->|1 - HTTP request buat pesanan, sinkron| Gateway
+    Customer -.->|0 - GET menu resto, sinkron| Gateway
+    Gateway -.->|request-response, sinkron| Catalog
+
+    Gateway -->|2 - request-response, sinkron| Order
+    Order -->|3 - request pembayaran, sinkron| Payment
+    Payment -->|4 - hasil pembayaran, sinkron| Order
+
+    Order -->|5 - publish OrderPaid, asinkron| Broker
+    Broker -->|6 - subscribe OrderPaid, asinkron| Catalog
+
+    Catalog -->|7 - publish OrderAccepted, asinkron| Broker
+    Broker -->|8 - subscribe OrderAccepted, asinkron| Courier
+
+    Courier -->|9 - publish CourierAssigned, asinkron| Broker
+    Broker -->|10 - subscribe CourierAssigned, asinkron| Notification
+    Broker -->|11 - subscribe CourierAssigned, asinkron| Order
+
+    Notification -->|12 - push notifikasi kurir, asinkron| Courier
+    Order -->|13 - update status, asinkron| Customer
+```
+
+Keterangan:
+
+- Panah putus-putus (`Customer --- Gateway --- Catalog`, langkah 0) adalah alur melihat menu, terpisah dari alur pemesanan di atas, dan tetap bersifat sinkron karena pelanggan menunggu daftar menu untuk ditampilkan.
+- Langkah 1–4 (Pelanggan - Gateway - Order - Payment - Order) bersifat sinkron, request-response ini bagian SOA.
+- Langkah 5–13, semuanya lewat Message Broker, bersifat asinkron, event-based — ini bagian Publish-Subscribe. Order Service, Catalog Resto Service, Courier Service, dan Notification Service tidak pernah memanggil satu sama lain secara langsung pada bagian ini.
+- Urutan event (`OrderPaid` - `OrderAccepted` - `CourierAssigned`) memastikan kurir baru ditugaskan setelah resto menerima pesanan, bukan bersamaan dengan pembayaran selesai.
 
 ## 8. Kesimpulan
 
