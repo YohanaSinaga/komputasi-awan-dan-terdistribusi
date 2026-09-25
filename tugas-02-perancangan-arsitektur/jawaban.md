@@ -138,8 +138,6 @@ Notification Service dan Order Service sama sama berlangganan event `CourierAssi
 
 Jenis komunikasi: Asinkron / Publish-Subscribe.
 
----
-
 ## 5. Jenis Komunikasi
 
 | Komunikasi                                        | Event / Data        | Jenis    | Alasan                                                                           |
@@ -155,8 +153,6 @@ Jenis komunikasi: Asinkron / Publish-Subscribe.
 | Courier Service -> Message Broker                 | `CourierAssigned` | Asinkron | Hasil penugasan kurir perlu disebarkan ke lebih dari satu penerima               |
 | Message Broker ->Notification Service, Order      | `CourierAssigned` | Asinkron | Notifikasi kurir dan update status pelanggan dapat diproses paralel              |
 
----
-
 ## 6. Alasan Kombinasi SOA dan Publish-Subscribe
 
 Kombinasi digunakan karena tidak semua komunikasi dalam FoodGo memiliki kebutuhan yg sama.
@@ -166,8 +162,6 @@ Komunikasi antara Order Service dan Payment Service membutuhkan hasil secara lan
 Dengan SOA, fungsi utama FoodGo dipisahkan menjadi beberapa service yang jelas batasnya (Order, Payment, Catalog). Dengan Pub-Sub, service yang menghasilkan event -> dalam hal ini Order Service dan Catalog Resto Service ->tidak perlu mengetahui secara langsung seluruh service yang menerima event tersebut. Catalog Resto Service kini menjadi bagian dari alur notifikasi lewat broker (bukan hanya diakses lewat API Gateway untuk menu), sehingga urutan "resto menerima notifikasi -> baru kurir ditugaskan" bisa dijamin lewat urutan event `OrderPaid` ->`OrderAccepted` ->`CourierAssigned`, bukan hanya kebetulan proses paralel.
 
 Hal ini mengurangi ketergantungan langsung antar service dibandingkan jika setiap service harus memanggil service lain secara langsung ->sesuai kebutuhan *decoupling* dari Tugas 1, di mana tim kurir dan tim resto sebelumnya harus ikut terdampak setiap kali ada deploy ulang pada modul lain.
-
----
 
 ## 7. Trade-off
 
@@ -186,8 +180,6 @@ Publish-Subscribe mengurangi ketergantungan langsung antara publisher dan subscr
 - **Event diterima lebih dari satu kali:** setiap event diberi ID unik dan setiap subscriber (Catalog Resto Service, Courier Service, Notification Service) dibuat *idempotent* memproses event dengan ID yang sama dua kali tidak boleh menghasilkan efek ganda, misalnya menugaskan dua kurir untuk satu pesanan.
 - **Monitoring antarservice:** setiap pesanan diberi *correlation ID* yang disertakan di setiap event (`OrderPaid`, `OrderAccepted`, `CourierAssigned`), sehingga status satu pesanan bisa ditelusuri lintas service dari satu ID yang sama.
 - **Debugging saat kegagalan:** dengan *correlation ID* dan pencatatan log di setiap service serta di broker, tim dapat menelusuri di titik mana sebuah pesanan berhenti diproses, tanpa harus menebak nebak dari log yang terpisah pisah.
-
----
 
 ## 8. Kesimpulan
 
