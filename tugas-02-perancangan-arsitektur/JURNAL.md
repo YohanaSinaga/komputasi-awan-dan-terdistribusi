@@ -1,10 +1,17 @@
 # Jurnal Proses — Tugas 2
 
-## [25 september 2026]
+## [ Jumat, 25 september 2026]
 
-- Opsi arsitektur yang dipertimbangkan: ...
-- Kenapa akhirnya pilih [SOA/Pub-Sub]: ...
-- Revisi diagram (versi 1 → versi 2, apa yang berubah dan kenapa): ...
+- Opsi arsitektur yang dipertimbangkan:
+
+* SOA murni, semua komunikasi antar service (Pesanan, Pembayaran, Resto, Kurir) lewat panggilan sinkron request-response.
+* Publish-Subscribe murni semua komunikasi, termasuk pembayaran, lewat event asinkron ke message broker.
+* Kombinasi SOA + Pub-Sub  jalur Pesanan - Pembayaran tetap sinkron, sedangkan koordinasi ke Resto, Kurir, dan notifikasi pelanggan lewat event asinkron.
+
+- Kenapa akhirnya pilih [SOA/Pub-Sub]: Opsi 1 (SOA murni) ditolak karena kalau notifikasi ke resto dan kurir juga dibuat sinkron, Order Service harus menunggu resto merespons dan kurir merespons sebelum bisa membalas ke pelanggan  ini justru mengembalikan *coupling* seperti di sistem monolitik, hanya dipisah jadi beberapa service yang saling menunggu. Opsi 2 (Pub-Sub murni) ditolak karena proses pembayaran butuh kepastian hasil sebelum sistem melangkah kalau dibuat asinkron, ada risiko pesanan "lolos" ke tahap penugasan kurir padahal pembayarannya sebenarnya belum/tidak berhasil, atau pelanggan harus menunggu tanpa kepastian jelas apakah kartunya berhasil ditagih. Opsi 3 dipilih karena memisahkan mana yang butuh kepastian langsung (pembayaran) dan mana yang boleh diproses belakangan oleh pihak lain (notifikasi resto, penugasan kurir) sesuai kebutuhan decoupling antar tim yang diminta di kasus Tugas 1.
+- Revisi diagram (versi 1 → versi 2, apa yang berubah dan kenapa):
+- Versi 1: mengikuti pola dasar dari contoh materi  Order Service langsung mem-*publish* ke broker, lalu broker diteruskan ke Notification Service dan Restaurant Service secara paralel. Belum ada API Gateway maupun jalur balik ke pelanggan.
+- Versi 2 (final): menambahkan API Gateway sebagai pintu masuk, memisahkan Courier Assignment Service dari Notification Service (di v1 keduanya digabung menjadi satu "modul kurir", padahal secara tanggung jawab berbeda: satu menentukan *siapa* kurirnya, satu lagi mengirim notifikasinya), dan menambahkan alur balik dari Broker ke Order Service agar pelanggan bisa menerima update status kurir  di v1 alur ini belum dijelaskan sehingga skenario end-to-end terasa terputus di tengah.
 
 ## Log Penggunaan AI (Level 2)
 
