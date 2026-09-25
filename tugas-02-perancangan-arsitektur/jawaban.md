@@ -1,12 +1,31 @@
 
 # Tugas 2 - Perancangan Arsitektur FoodGo
 
-## 1. Gaya Arsitektur yang dipilih
+## Kelompok
 
-Kombinasi Service-Oriented Architecture (SOA) + Publish-Subscribe (Pub-Sub). 
+| Nama                     | NIM          | Bagian yang dikerjakan               |
+| ------------------------ | ------------ | ------------------------------------ |
+| Yohana Sinaga            | 103072400009 | SOA dan Service                      |
+| Yohanna Purnomo          | 103072400127 | Publish-Subscribe dan Message Broker |
+| Laura Chyndearni Saragih | 103072400049 | Alur komunikasi dan trade-off        |
 
-Pelanggan perlu tahu seketika apakah pembayarannya berhasil sebelum pesanan dilanjutkan, sifat komunikasinya butuh jawaban pasti dan sinkron, sehingga gaya yang cocok adalah Service-Oriented Architecture(SOA).
+## 1. Gaya Arsitektur yang Dipilih
 
-Resto perlu diberi tahu ada pesanan baru, kurir perlu diberi tahu ada tugas baru, pelanggan perlu diberi tahu status kurir, sifat komunikasinya tidak perlu jawaban langsunh, banyak penerima, boleh sedikit tertunda, sehingga gaya yang cocok adalah Publish-Subscribe(Pub-Sub).
+Kami memilih kombinasi **Service-Oriented Architecture (SOA)** dan **Publish-Subscribe (Pub-Sub)**.
 
-Bagian transaksi inti (Pesanan - Pembayaran) tetap menggunakan pola SOA berbasis *request-response* karena keputusan "bayar berhasil/gagal" harus pasti sebelum sistem melangkah ke tahap berikutnya, kalau ini dibuat asinkron, sistem bisa saja melanjutkan pesanan yang sebenarnya pembayarannya gagal. Sebaliknya, **koordinasi lintas tim** (resto, kurir, notifikasi ke pelanggan) memakai Pub-Sub lewat  *message broker* , sehingga Service Pesanan **tidak pernah tahu dan tidak peduli** siapa saja yang mendengarkan event-nya.
+Pelanggan perlu tahu seketika apakah pembayarannya berhasil sebelum pesanan dilanjutkan. Sifat komunikasinya membutuhkan jawaban yang pasti dan sinkron, sehingga bagian ini menggunakan **Service-Oriented Architecture (SOA)** dengan pola komunikasi *request-response*.
+
+Resto perlu diberi tahu ketika ada pesanan baru, kurir perlu diberi tahu ketika ada tugas baru, dan pelanggan perlu mendapatkan informasi mengenai status kurir. Sifat komunikasi tersebut tidak selalu membutuhkan jawaban langsung, dapat memiliki beberapa penerima, dan boleh diproses sedikit tertunda. Oleh karena itu, bagian tersebut menggunakan **Publish-Subscribe (Pub-Sub)**.
+
+Bagian transaksi inti, yaitu **Pesanan - Pembayaran**, tetap menggunakan pola SOA berbasis *request-response* karena keputusan "pembayaran berhasil atau gagal" harus diketahui sebelum sistem melanjutkan proses berikutnya. Jika proses tersebut dibuat sepenuhnya asinkron, sistem dapat melanjutkan proses pesanan sebelum mengetahui hasil pembayaran.
+
+Sebaliknya, **koordinasi lintas layanan** seperti resto, kurir, dan notifikasi pelanggan menggunakan Pub-Sub melalui *message broker*. Dengan cara ini, Order Service tidak perlu mengetahui secara langsung siapa saja yang menerima event yang dikirimkannya Catalog Resto Service, Courier Service, dan Notification Service masing-masing berlangganan event yang relevan bagi mereka.
+
+
+## 8. Kesimpulan
+
+FoodGo membutuhkan arsitektur yang lebih terpisah dibandingkan arsitektur monolitik sebelumnya. Kombinasi SOA dan Publish-Subscribe digunakan karena kedua pendekatan tersebut memiliki fungsi yang berbeda.
+
+SOA digunakan untuk bagian yang membutuhkan kepastian langsung, yaitu pesanan dan pembayaran. Publish-Subscribe digunakan untuk menyebarkan event kepada service yang membutuhkan Catalog Resto Service, Courier Service, dan Notification Service tanpa membuat Order Service bergantung langsung kepada semua penerima, dan dengan urutan event yang menjamin resto menerima notifikasi terlebih dahulu sebelum kurir ditugaskan.
+
+Dengan rancangan tersebut, perubahan atau deployment pada satu service (misalnya Courier Service atau Notification Service) tidak lagi menyebabkan seluruh aplikasi FoodGo ikut berhenti. Namun, pemisahan service dan penggunaan message broker juga menambah kompleksitas: kegagalan, keterlambatan, dan duplikasi event perlu ditangani secara eksplisit, dan proses debugging membutuhkan bantuan *correlation ID* karena alurnya tidak lagi berjalan dalam satu proses tunggal seperti sebelumnya.
