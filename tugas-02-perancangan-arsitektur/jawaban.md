@@ -142,18 +142,18 @@ Jenis komunikasi: Asinkron / Publish-Subscribe.
 
 ## 5. Jenis Komunikasi
 
-| Komunikasi                                      | Event / Data       | Jenis    | Alasan                                                                           |
-| ------------------------------------------------ | ------------------- | -------- | --------------------------------------------------------------------------------- |
-| Pelanggan -> API Gateway -> Catalog Resto Service | GET menu            | Sinkron  | Pelanggan menunggu daftar menu untuk ditampilkan                                  |
-| Pelanggan -> API Gateway -> Order Service         | Buat pesanan         | Sinkron  | Pelanggan membutuhkan konfirmasi bahwa pesanan diterima sistem                    |
-| Order Service -> Payment Service                 | Permintaan bayar     | Sinkron  | Order perlu memastikan pembayaran berhasil sebelum melanjutkan                    |
-| Payment Service -> Order Service                 | Hasil bayar          | Sinkron  | Hasil pembayaran harus segera diketahui, bukan ditunda                            |
-| Order Service -> Message Broker                  | `OrderPaid`          | Asinkron | Order tidak perlu tahu siapa saja yang akan memproses pesanan yang sudah dibayar  |
-| Message Broker -> Catalog Resto Service          | `OrderPaid`          | Asinkron | Notifikasi resto boleh diproses sedikit tertunda                                  |
-| Catalog Resto Service -> Message Broker          | `OrderAccepted`      | Asinkron | Konfirmasi resto diteruskan tanpa Catalog memanggil Courier secara langsung       |
-| Message Broker -> Courier Service                | `OrderAccepted`      | Asinkron | Penugasan kurir baru berjalan setelah resto menerima pesanan                       |
-| Courier Service -> Message Broker                | `CourierAssigned`    | Asinkron | Hasil penugasan kurir perlu disebarkan ke lebih dari satu penerima                 |
-| Message Broker -> Notification Service, Order    | `CourierAssigned`    | Asinkron | Notifikasi kurir dan update status pelanggan dapat diproses paralel               |
+| Komunikasi                                        | Event / Data        | Jenis    | Alasan                                                                           |
+| ------------------------------------------------- | ------------------- | -------- | -------------------------------------------------------------------------------- |
+| Pelanggan -> API Gateway -> Catalog Resto Service | GET menu            | Sinkron  | Pelanggan menunggu daftar menu untuk ditampilkan                                 |
+| Pelanggan -> API Gateway ->Order Service         | Buat pesanan        | Sinkron  | Pelanggan membutuhkan konfirmasi bahwa pesanan diterima sistem                   |
+| Order Service ->Payment Service                   | Permintaan bayar    | Sinkron  | Order perlu memastikan pembayaran berhasil sebelum melanjutkan                   |
+| Payment Service ->Order Service                   | Hasil bayar         | Sinkron  | Hasil pembayaran harus segera diketahui, bukan ditunda                           |
+| Order Service ->Message Broker                    | `OrderPaid`       | Asinkron | Order tidak perlu tahu siapa saja yang akan memproses pesanan yang sudah dibayar |
+| Message Broker ->Catalog Resto Service            | `OrderPaid`       | Asinkron | Notifikasi resto boleh diproses sedikit tertunda                                 |
+| Catalog Resto Service ->Message Broker            | `OrderAccepted`   | Asinkron | Konfirmasi resto diteruskan tanpa Catalog memanggil Courier secara langsung      |
+| Message Broker ->Courier Service                  | `OrderAccepted`   | Asinkron | Penugasan kurir baru berjalan setelah resto menerima pesanan                     |
+| Courier Service -> Message Broker                 | `CourierAssigned` | Asinkron | Hasil penugasan kurir perlu disebarkan ke lebih dari satu penerima               |
+| Message Broker ->Notification Service, Order      | `CourierAssigned` | Asinkron | Notifikasi kurir dan update status pelanggan dapat diproses paralel              |
 
 ---
 
@@ -163,9 +163,9 @@ Kombinasi digunakan karena tidak semua komunikasi dalam FoodGo memiliki kebutuha
 
 Komunikasi antara Order Service dan Payment Service membutuhkan hasil secara langsung sehingga lebih sesuai menggunakan komunikasi sinkron (SOA). Di sisi lain, informasi seperti pesanan baru, konfirmasi resto, dan tugas kurir akan dikirim melalui event (Pub-Sub) karena dapat diprose beberapa service dengan cara terpisah dan tidak membutuhkan jawaban seketika.
 
-Dengan SOA, fungsi utama FoodGo dipisahkan menjadi beberapa service yang jelas batasnya (Order, Payment, Catalog). Dengan Pub-Sub, service yang menghasilkan event -> dalam hal ini Order Service dan Catalog Resto Service -> tidak perlu mengetahui secara langsung seluruh service yang menerima event tersebut. Catalog Resto Service kini menjadi bagian dari alur notifikasi lewat broker (bukan hanya diakses lewat API Gateway untuk menu), sehingga urutan "resto menerima notifikasi -> baru kurir ditugaskan" bisa dijamin lewat urutan event `OrderPaid` -> `OrderAccepted` -> `CourierAssigned`, bukan hanya kebetulan proses paralel.
+Dengan SOA, fungsi utama FoodGo dipisahkan menjadi beberapa service yang jelas batasnya (Order, Payment, Catalog). Dengan Pub-Sub, service yang menghasilkan event -> dalam hal ini Order Service dan Catalog Resto Service ->tidak perlu mengetahui secara langsung seluruh service yang menerima event tersebut. Catalog Resto Service kini menjadi bagian dari alur notifikasi lewat broker (bukan hanya diakses lewat API Gateway untuk menu), sehingga urutan "resto menerima notifikasi -> baru kurir ditugaskan" bisa dijamin lewat urutan event `OrderPaid` ->`OrderAccepted` ->`CourierAssigned`, bukan hanya kebetulan proses paralel.
 
-Hal ini mengurangi ketergantungan langsung antar service dibandingkan jika setiap service harus memanggil service lain secara langsung -> sesuai kebutuhan *decoupling* dari Tugas 1, di mana tim kurir dan tim resto sebelumnya harus ikut terdampak setiap kali ada deploy ulang pada modul lain.
+Hal ini mengurangi ketergantungan langsung antar service dibandingkan jika setiap service harus memanggil service lain secara langsung ->sesuai kebutuhan *decoupling* dari Tugas 1, di mana tim kurir dan tim resto sebelumnya harus ikut terdampak setiap kali ada deploy ulang pada modul lain.
 
 ---
 
@@ -183,7 +183,7 @@ Publish-Subscribe mengurangi ketergantungan langsung antara publisher dan subscr
 
 - **Event gagal diproses:** ditangani dengan mekanisme *retry* otomatis oleh broker, dan bila tetap gagal setelah beberapa percobaan, event dipindahkan ke *dead-letter queue* untuk diperiksa manual, bukan hilang begitu saja.
 - **Event terlambat:** setiap event diberi *timestamp* dan batas waktu wajar (misalnya penugasan kurir yang belum diproses setelah beberapa menit ditandai untuk ditinjau ulang), sehingga keterlambatan tidak terjadi tanpa terdeteksi.
-- **Event diterima lebih dari satu kali:** setiap event diberi ID unik dan setiap subscriber (Catalog Resto Service, Courier Service, Notification Service) dibuat *idempotent* â memproses event dengan ID yang sama dua kali tidak boleh menghasilkan efek ganda, misalnya menugaskan dua kurir untuk satu pesanan.
+- **Event diterima lebih dari satu kali:** setiap event diberi ID unik dan setiap subscriber (Catalog Resto Service, Courier Service, Notification Service) dibuat *idempotent* memproses event dengan ID yang sama dua kali tidak boleh menghasilkan efek ganda, misalnya menugaskan dua kurir untuk satu pesanan.
 - **Monitoring antarservice:** setiap pesanan diberi *correlation ID* yang disertakan di setiap event (`OrderPaid`, `OrderAccepted`, `CourierAssigned`), sehingga status satu pesanan bisa ditelusuri lintas service dari satu ID yang sama.
 - **Debugging saat kegagalan:** dengan *correlation ID* dan pencatatan log di setiap service serta di broker, tim dapat menelusuri di titik mana sebuah pesanan berhenti diproses, tanpa harus menebak nebak dari log yang terpisah pisah.
 
