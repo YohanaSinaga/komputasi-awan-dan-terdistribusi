@@ -104,6 +104,91 @@ Keterangan:
 - Langkah 5–13, semuanya lewat Message Broker, bersifat asinkron, event-based — ini bagian Publish-Subscribe. Order Service, Catalog Resto Service, Courier Service, dan Notification Service tidak pernah memanggil satu sama lain secara langsung pada bagian ini.
 - Urutan event (`OrderPaid` - `OrderAccepted` - `CourierAssigned`) memastikan kurir baru ditugaskan setelah resto menerima pesanan, bukan bersamaan dengan pembayaran selesai.
 
+## 4. Alur End-to-End
+
+### 4.1 Pelanggan membuat pesanan
+
+Pelanggan akan mengirim permintaan pembuatan pesanan dari API Gateway. API Gateway kemuadian mengirimkam permintaan tersebut kepada Order Service.
+
+**Jenis komunikasi:** Sinkron / request-response.
+
+### 4.2 Order memproses pembayaran
+
+Order Service meminta Payment Service supaya memproses pembayaran. Lalu Payment Service memberikan hasil apakah pembayaran berhasil atau gagal dan Order Service akan menunggu jawaban ini sebelum melanjutkan.
+
+**Jenis komunikasi:** Sinkron / request-response.
+
+Bagian ini memakai komunikasi sinkron karena Order Service membutuhkan hasil pembayaran sebelum melanjutkan proses pesanan. Jika pe,bayaran nya gagal, alur berhenti di sini dan tidak ada event yang dikirim ke Message Broker.
+
+### 4.3 Resto menerima notifikasi pesanan
+
+Setelah pembayaran berhasil, Order Service mem-*publish* event `OrderPaid` ke Message Broker. Catalog Resto Service berlangganan event ini lalu menerima pemberitahuan pesanan baru **tanpa dipanggil langsung oleh Order Service**. Setelah resto menekan "terima pesanan", Catalog Resto Service mem-*publish* event `OrderAccepted`.
+
+**Jenis komunikasi:** Asinkron / Publish-Subscribe.
+
+### 4.4 Kurir ditugaskan
+
+Courier Service berlangganan event `OrderAccepted` âyang artinya Courier Service baru memulai mencari dan menugaskan kurir **setelah** resto mengonfirmasi pesanan, bukan bersamaan dengan pembayaran. Setelah kurir ditentukan, Courier Service mem-*publish* event `CourierAssigned`.
+
+**Jenis komunikasi:** Asinkron / Publish-Subscribe.
+
+### 4.5 Kurir dan pelanggan menerima notifikasi
+
+Notification Service dan Order Service sama sama berlangganan event `CourierAssigned`. Notification Service mengirim notifikasi tugas ke aplikasi kurir, sedangkan Order Service memperbarui status pesanan dan mendorong perubahan tersebut ke pelanggan.
+
+**Jenis komunikasi:** Asinkron / Publish-Subscribe.
+
+---
+
+## 5. Jenis Komunikasi
+
+| Komunikasi                                      | Event / Data       | Jenis    | Alasan                                                                           |
+| ------------------------------------------------ | ------------------- | -------- | --------------------------------------------------------------------------------- |
+| Pelanggan â API Gateway â Catalog Resto Service | GET menu            | Sinkron  | Pelanggan menunggu daftar menu untuk ditampilkan                                  |
+| Pelanggan â API Gateway â Order Service         | Buat pesanan         | Sinkron  | Pelanggan membutuhkan konfirmasi bahwa pesanan diterima sistem                    |
+| Order Service â Payment Service                 | Permintaan bayar     | Sinkron  | Order perlu memastikan pembayaran berhasil sebelum melanjutkan                    |
+| Payment Service â Order Service                 | Hasil bayar          | Sinkron  | Hasil pembayaran harus segera diketahui, bukan ditunda                            |
+| Order Service â Message Broker                  | `OrderPaid`          | Asinkron | Order tidak perlu tahu siapa saja yang akan memproses pesanan yang sudah dibayar  |
+| Message Broker â Catalog Resto Service          | `OrderPaid`          | Asinkron | Notifikasi resto boleh diproses sedikit tertunda                                  |
+| Catalog Resto Service â Message Broker          | `OrderAccepted`      | Asinkron | Konfirmasi resto diteruskan tanpa Catalog memanggil Courier secara langsung       |
+| Message Broker â Courier Service                | `OrderAccepted`      | Asinkron | Penugasan kurir baru berjalan setelah resto menerima pesanan                       |
+| Courier Service â Message Broker                | `CourierAssigned`    | Asinkron | Hasil penugasan kurir perlu disebarkan ke lebih dari satu penerima                 |
+| Message Broker â Notification Service, Order    | `CourierAssigned`    | Asinkron | Notifikasi kurir dan update status pelanggan dapat diproses paralel               |
+
+---
+
+## 6. Alasan Kombinasi SOA dan Publish-Subscribe
+
+Kombinasi digunakan karena tidak semua komunikasi dalam FoodGo memiliki kebutuhan yg sama.
+
+Komunikasi antara Order Service dan Payment Service membutuhkan hasil secara langsung sehingga lebih sesuai menggunakan komunikasi sinkron (SOA). Di sisi lain, informasi seperti pesanan baru, konfirmasi resto, dan tugas kurir akan dikirim melalui event (Pub-Sub) karena dapat diprose beberapa service dengan cara terpisah dan tidak membutuhkan jawaban seketika.
+
+Dengan SOA, fungsi utama FoodGo dipisahkan menjadi beberapa service yang jelas batasnya (Order, Payment, Catalog). Dengan Pub-Sub, service yang menghasilkan event â dalam hal ini Order Service dan Catalog Resto Service â tidak perlu mengetahui secara langsung seluruh service yang menerima event tersebut. Catalog Resto Service kini menjadi bagian dari alur notifikasi lewat broker (bukan hanya diakses lewat API Gateway untuk menu), sehingga urutan "resto menerima notifikasi â baru kurir ditugaskan" bisa dijamin lewat urutan event `OrderPaid` â `OrderAccepted` â `CourierAssigned`, bukan hanya kebetulan proses paralel.
+
+Hal ini mengurangi ketergantungan langsung antar service dibandingkan jika setiap service harus memanggil service lain secara langsung â sesuai kebutuhan *decoupling* dari Tugas 1, di mana tim kurir dan tim resto sebelumnya harus ikut terdampak setiap kali ada deploy ulang pada modul lain.
+
+---
+
+## 7. Trade-off
+
+### Trade-off SOA
+
+Pemisahan service membuat setiap bagian sistem lebih terpisah, tetapi komunikasi Order ServiceâPayment Service sekarang bergantung pada jaringan dan bersifat sinkron. Jika Payment Service lambat merespons/sedang down, pembuatan pesanan ikut tertaha/ gagal total. Ini perlu ditangani dengan *timeout*, mekanisme *retry* terbatas, dan *circuit breaker* di sisi Order Service agar kegagalan Payment Service tidak membuat seluruh Order Service ikut macet.
+
+### Trade-off Publish-Subscribe
+
+Publish-Subscribe mengurangi ketergantungan langsung antara publisher dan subscriber tetapi alur sistem menjadi lebih sulit dilacak karena tidak berjalan dalam satu jalur linear. Ketika sebuah event tidak sampai atau tidak diproses, tim perlu memeriksa tiga kemungkinan sumber masalah yaitu publisher, message broker, atau subscriber â yg masing-masing dikelola tim berbeda.
+
+### Penanganan trade-off tambahan
+
+- **Event gagal diproses:** ditangani dengan mekanisme *retry* otomatis oleh broker, dan bila tetap gagal setelah beberapa percobaan, event dipindahkan ke *dead-letter queue* untuk diperiksa manual, bukan hilang begitu saja.
+- **Event terlambat:** setiap event diberi *timestamp* dan batas waktu wajar (mis. penugasan kurir yang belum diproses setelah beberapa menit ditandai untuk ditinjau ulang), sehingga keterlambatan tidak terjadi tanpa terdeteksi.
+- **Event diterima lebih dari satu kali:** setiap event diberi ID unik dan setiap subscriber (Catalog Resto Service, Courier Service, Notification Service) dibuat *idempotent* â memproses event dengan ID yang sama dua kali tidak boleh menghasilkan efek ganda, misalnya menugaskan dua kurir untuk satu pesanan.
+- **Monitoring antarservice:** setiap pesanan diberi *correlation ID* yang disertakan di setiap event (`OrderPaid`, `OrderAccepted`, `CourierAssigned`), sehingga status satu pesanan bisa ditelusuri lintas service dari satu ID yang sama.
+- **Debugging saat kegagalan:** dengan *correlation ID* dan pencatatan log di setiap service serta di broker, tim dapat menelusuri di titik mana sebuah pesanan berhenti diproses, tanpa harus menebak nebak dari log yang terpisah pisah.
+
+---
+
 ## 8. Kesimpulan
 
 FoodGo membutuhkan arsitektur yang lebih terpisah dibandingkan arsitektur monolitik sebelumnya. Kombinasi SOA dan Publish-Subscribe digunakan karena kedua pendekatan tersebut memiliki fungsi yang berbeda.
