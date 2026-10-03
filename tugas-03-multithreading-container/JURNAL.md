@@ -2,8 +2,40 @@
 
 ## Percobaan tanpa Lock
 
-- Hasil `processed_count` yang didapat: ...
-- Kenapa bisa meleset (jelaskan mekanisme race condition dengan kata sendiri): ...
+- Pada percobaan pertama, program dijalankan tanpa menggunakan `<span>threading.Lock()</span>`untuk membuat race condition lebih mudah terlihat, proses pembacaan dan perubahan`<span>processed_count</span>` dibuat terpisah:
+
+```
+current = processed_count
+time.sleep(0.001)
+processed_count = current + 1
+```
+
+### Hasil Percobaan
+
+Program dijalankan sebanyak lima kali dan menghasilkan:
+
+* Percobaan 1: 33 dari 100
+* Percobaan 2: 37 dari 100
+* Percobaan 3: 38 dari 100
+* Percobaan 4: 34 dari 100
+* Percobaan 5: 37 dari 100
+
+Hasil tersebut tidak sesuai dengan jumlah pesanan yang seharusnya, yaitu 100.
+
+### Analisis Race Condition
+
+Race condition terjadi karena beberapa thread mengakses dan mengubah `<span>processed_count</span>` secara bersamaan.
+
+Ketika satu thread membaca nilai `<span>processed_count</span>`, thread lain dapat membaca nilai yang sama sebelum perubahan pertama selesai. Akibatnya, beberapa proses penambahan dapat saling menimpa sehingga jumlah akhir menjadi lebih kecil dari 100.
+
+Hasil yang berbeda-beda pada setiap percobaan terjadi karena urutan eksekusi thread tidak selalu sama.
+
+Bukti percobaan disimpan pada:
+
+```
+bukti/race-condition-tanpa-lock.png
+```
+
 
 ## Percobaan dengan Lock
 
