@@ -36,10 +36,57 @@ Bukti percobaan disimpan pada:
 bukti/race-condition-tanpa-lock.png
 ```
 
-
 ## Percobaan dengan Lock
 
-- Hasil `processed_count` setelah perbaikan: ...
+- Setelah melihat race condition pada percobaan sebelumnya, program diperbaiki dengan menggunakan threading.Lock(). Lock dibuat dengan:
+
+python
+lock = threading.Lock()
+
+Kemudian proses membaca dan memperbarui processed_count dilindungi oleh:
+
+python
+with lock:
+    current = processed_count
+    time.sleep(0.001)
+    processed_count = current + 1
+
+Dengan cara ini, hanya satu thread yang dapat menjalankan bagian tersebut pada satu waktu. Thread lain harus menunggu sampai thread sebelumnya selesai melakukan perubahan pada processed_count.
+
+### Hasil Percobaan
+
+Program dijalankan sebanyak lima kali setelah menggunakan Lock.
+
+Hasil yang diperoleh:
+
+* Percobaan 1: 100 dari 100
+* Percobaan 2: 100 dari 100
+* Percobaan 3: 100 dari 100
+* Percobaan 4: 100 dari 100
+* Percobaan 5: 100 dari 100
+
+Hasil selalu sesuai dengan jumlah pesanan yang seharusnya, yaitu 100.
+
+Bukti percobaan disimpan pada:
+
+text
+bukti/race-condition-with_lock.png
+
+---
+
+## Perbandingan Hasil
+
+| Percobaan | Tanpa Lock | Dengan Lock |
+| --------- | ---------: | ----------: |
+| 1         |         33 |         100 |
+| 2         |         37 |         100 |
+| 3         |         38 |         100 |
+| 4         |         34 |         100 |
+| 5         |         37 |         100 |
+
+Dari hasil tersebut dapat dilihat bahwa tanpa Lock terjadi race condition sehingga hasil tidak konsisten.
+
+Setelah menggunakan Lock, hasil menjadi konsisten dan sesuai dengan jumlah pesanan yang diproses.
 
 ## Kendala Docker
 
