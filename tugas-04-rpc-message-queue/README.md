@@ -18,6 +18,7 @@ Skeleton di folder `rpc/` memakai `xmlrpc` — bagian dari Python standard libra
 - `rpc/client.py`: mensimulasikan modul Pesanan yang memanggil fungsi RPC di atas dan menunggu hasilnya.
 
 Jalankan (dua terminal terpisah, di laptop yang sama):
+
 ```bash
 python3 rpc/server.py      # terminal 1
 python3 rpc/client.py      # terminal 2
@@ -48,6 +49,16 @@ Dashboard manajemen RabbitMQ (untuk lihat antrean secara visual) otomatis aktif 
 3. Untuk Jalur B, matikan dulu `consumer.py`, jalankan `publisher.py` beberapa kali, lalu nyalakan `consumer.py` — buktikan pesan **tetap diproses** (tidak hilang) karena antrean menyimpannya. Ini adalah inti pembelajaran *asynchronous decoupling*.
 4. Tulis analisis: kenapa jalur ini (RPC atau MQ) cocok untuk skenario yang kalian pilih, dan apa yang terjadi jika dipakai untuk skenario yang salah (mis. RPC dipakai untuk notifikasi kurir → modul pembayaran ikut lambat kalau kurir down).
 
+Jawab
+
+Analisis:
+
+RPC cocok untuk proses seperti cek saldo dan pembayaran karena membutuhkan respons langsung. Client mengirim request dan menunggu hasil dari server.
+
+MQ cocok untuk notifikasi pembayaran karena tidak perlu menunggu modul Kurir. Pesan disimpan di RabbitMQ dan tetap bisa diproses saat Consumer sudah siap.
+
+Jika RPC digunakan untuk notifikasi Kurir, modul Pembayaran bisa ikut lambat atau terhenti ketika Kurir sedang sibuk/down. Sebaliknya, MQ kurang cocok untuk cek saldo karena hasilnya tidak bisa didapat secara langsung.
+
 ## Struktur Submission
 
 ```
@@ -61,12 +72,12 @@ tugas-04-rpc-message-queue/
 
 ## Rubrik Penilaian (Tugas 4)
 
-| Komponen | Bobot | Kriteria |
-|---|---|---|
-| Implementasi berjalan (minimal 1 jalur) | 35% | RPC call sukses dapat balasan, ATAU pesan MQ sukses dikonsumsi |
-| Bukti *asynchronous decoupling* (khusus Jalur B) / bukti sinkron blocking (Jalur A) | 25% | Skenario consumer mati lalu nyala lagi (B), atau bukti client menunggu response (A) |
-| Analisis pemilihan pola komunikasi | 25% | Justifikasi tepat berdasarkan kebutuhan sinkron vs asinkron di skenario |
-| Proses & kontribusi kelompok | 15% | `JURNAL.md`, commit history |
+| Komponen                                                                             | Bobot | Kriteria                                                                            |
+| ------------------------------------------------------------------------------------ | ----- | ----------------------------------------------------------------------------------- |
+| Implementasi berjalan (minimal 1 jalur)                                              | 35%   | RPC call sukses dapat balasan, ATAU pesan MQ sukses dikonsumsi                      |
+| Bukti*asynchronous decoupling* (khusus Jalur B) / bukti sinkron blocking (Jalur A) | 25%   | Skenario consumer mati lalu nyala lagi (B), atau bukti client menunggu response (A) |
+| Analisis pemilihan pola komunikasi                                                   | 25%   | Justifikasi tepat berdasarkan kebutuhan sinkron vs asinkron di skenario             |
+| Proses & kontribusi kelompok                                                         | 15%   | `JURNAL.md`, commit history                                                       |
 
 ## Batasan Penggunaan AI (Level 2)
 

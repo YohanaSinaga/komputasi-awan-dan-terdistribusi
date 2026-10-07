@@ -26,12 +26,15 @@ Consumer menampilkan notifikasi pembayaran untuk user1, user2, dan user3. Setela
 
 ## Kendala teknis
 
-- Error saat setup (mis. koneksi RabbitMQ ditolak, port bentrok): ...
+* **Bagian RPC:** Tidak ada kendala besar karena `xmlrpc` sudah tersedia di Python. Kami melakukan percobaan dengan memberikan delay pada server untuk membuktikan bahwa client menunggu respons.
+* **Bagian Docker/RabbitMQ dan Publisher:** Awalnya library `pika` belum terpasang sehingga muncul error `No module named 'pika'`. Setelah library di-install, Publisher dapat dijalankan. Selain itu, koneksi menggunakan `localhost` tidak bisa digunakan karena RabbitMQ berada di laptop teman.
+* **Bagian Consumer:** Saat pertama kali mencoba koneksi ke RabbitMQ, `TcpTestSucceeded` menunjukkan `False`. Setelah menggunakan IP yang benar dari laptop teman dan memastikan port 5672 dapat diakses, koneksi berhasil.
 
 ## Uji "pesan tidak hilang" (khusus Jalur B)
 
 - Langkah uji: matikan consumer → jalankan publisher → nyalakan consumer
 - Hasil yang diamati:
+- **Bagian Docker/RabbitMQ:** RabbitMQ tetap menyimpan pesan yang dikirim ke queue walaupun Consumer sedang tidak berjalan. Saat Consumer dimatikan dan Publisher mengirim 3 pesan, dashboard menunjukkan `Ready = 3`.
 - **Publisher:** Publisher berhasil mengirimkan 3 event pembayaran tanpa harus menunggu Consumer memproses pesan tersebut.
 - **Consumer:** Setelah Consumer dijalankan kembali, ketiga pesan yang sebelumnya tersimpan di RabbitMQ berhasil diterima dan diproses. Setelah `basic_ack`, queue menunjukkan `Ready = 0`.
 
