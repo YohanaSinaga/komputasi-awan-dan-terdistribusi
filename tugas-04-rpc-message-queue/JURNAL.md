@@ -10,7 +10,13 @@ Hasil percobaan menunjukkan bahwa `cek_saldo("user1")` mengembalikan saldo Rp50.
 
 Kami juga mencoba memberikan delay pada server untuk melihat cara kerja komunikasi synchronous. Client harus menunggu sampai server memberikan respons. Dari percobaan tersebut terlihat bahwa RPC cocok digunakan untuk proses yang membutuhkan hasil secara langsung.
 
+Untuk bagian MQ, RabbitMQ dijalankan menggunakan Docker pada laptop salah satu anggota kelompok. Queue yang digunakan adalah `pembayaran_berhasil`.
 
+Pada saat setup Publisher, terdapat error `No module named 'pika'` karena library `pika` belum terpasang. Setelah membuat virtual environment dan meng-install `pika` melalui `requirements.txt`, Publisher dapat dijalankan.
+
+Publisher kemudian mengirimkan 3 pesan pembayaran, yaitu user1 sebesar Rp20.000, user2 sebesar Rp40.000, dan user3 sebesar Rp60.000.
+
+Karena RabbitMQ berada di laptop teman, awalnya kami menggunakan `localhost` tetapi koneksi tidak berhasil. Setelah menggunakan IP laptop teman dan melakukan pengecekan port 5672, koneksi berhasil. Pesan yang dikirim Publisher kemudian terlihat pada RabbitMQ Management Dashboard.
 
 Consumer dijalankan pada laptop yang berbeda dengan RabbitMQ. Setelah koneksi berhasil, Consumer menggunakan queue `pembayaran_berhasil` untuk menerima pesan dari Publisher.
 
@@ -26,6 +32,7 @@ Consumer menampilkan notifikasi pembayaran untuk user1, user2, dan user3. Setela
 
 - Langkah uji: matikan consumer → jalankan publisher → nyalakan consumer
 - Hasil yang diamati:
+- **Publisher:** Publisher berhasil mengirimkan 3 event pembayaran tanpa harus menunggu Consumer memproses pesan tersebut.
 - **Consumer:** Setelah Consumer dijalankan kembali, ketiga pesan yang sebelumnya tersimpan di RabbitMQ berhasil diterima dan diproses. Setelah `basic_ack`, queue menunjukkan `Ready = 0`.
 
 ## Log Penggunaan AI (Level 2)
