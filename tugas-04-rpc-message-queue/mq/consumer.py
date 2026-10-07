@@ -11,22 +11,54 @@ QUEUE_NAME = "pembayaran_berhasil"
 
 
 def callback(ch, method, properties, body):
-    pesan = json.loads(body)
-    # TODO 1: proses pesan (misalnya cetak "Kurir menerima notifikasi
-    # pembayaran untuk {user_id} sejumlah {jumlah}").
-    print(f"[TODO] Pesan diterima tapi belum diproses: {pesan}")
 
-    # TODO 2: kirim acknowledgement ke RabbitMQ (ch.basic_ack) supaya
-    # pesan dihapus dari antrean setelah berhasil diproses.
+    # Mengubah pesan JSON menjadi dictionary
+    pesan = json.loads(body)
+
+    # Memproses pesan
+    print(
+        f"Kurir menerima notifikasi pembayaran "
+        f"untuk {pesan['user_id']} "
+        f"sejumlah Rp{pesan['jumlah']}"
+    )
+
+    # Memberikan acknowledgement
+    ch.basic_ack(
+        delivery_tag=method.delivery_tag
+    )
 
 
 def main():
-    # TODO 3: buat koneksi & channel seperti di publisher.py, deklarasikan
-    # queue yang SAMA (durable=True), lalu daftarkan `callback` dengan
-    # channel.basic_consume(...).
-    print("Menunggu event dari antrean 'pembayaran_berhasil'... (Ctrl+C untuk berhenti)")
 
-    # TODO 4: panggil channel.start_consuming()
+    # Koneksi ke RabbitMQ di laptop teman
+    connection = pika.BlockingConnection(
+        pika.ConnectionParameters(
+            host="10.219.3.196"
+        )
+    )
+
+    # Membuat channel
+    channel = connection.channel()
+
+    # Menggunakan queue yang sama dengan publisher
+    channel.queue_declare(
+        queue=QUEUE_NAME,
+        durable=True
+    )
+
+    # Mendaftarkan callback
+    channel.basic_consume(
+        queue=QUEUE_NAME,
+        on_message_callback=callback
+    )
+
+    print(
+        "Menunggu event dari antrean "
+        "'pembayaran_berhasil'... (Ctrl+C untuk berhenti)"
+    )
+
+    # Menunggu pesan
+    channel.start_consuming()
 
 
 if __name__ == "__main__":
