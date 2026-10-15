@@ -80,14 +80,14 @@ class Node:
                 self.ok_received.set()
 
         elif msg_type == "COORDINATOR":
-            if sender_id > self.node_id:
-                with self.lock:
-                    self.leader_id = sender_id
-
-                print(
-                    f"[Node {self.node_id}] "
-                    f"Leader saat ini adalah Node {sender_id}"
-                )
+                    if sender_id > self.node_id:
+                        with self.lock:
+                            self.leader_id = sender_id
+        
+                        print(
+                            f"[Node {self.node_id}] "
+                            f"Leader saat ini adalah Node {sender_id}"
+                        )
 
         elif msg_type == "PING":
             # Koneksi berhasil mencapai server, berarti node masih aktif.
@@ -111,9 +111,9 @@ class Node:
                     return
 
             higher_peers = {
-                pid: port
-                for pid, port in self.peers.items()
-                if pid > self.node_id
+                peer_id: peer_port
+                for peer_id, peer_port in self.peers.items()
+                if peer_id > self.node_id
             }
 
             self.ok_received.clear()
@@ -124,7 +124,13 @@ class Node:
             )
 
             for peer_id, peer_port in higher_peers.items():
-                self.send_message(peer_port, "ELECTION")
+              sent =  self.send_message(peer_port, "ELECTION")
+
+              if not sent:
+                    print(
+                        f"[Node {self.node_id}] "
+                        f"Node {peer_id} tidak merespons"
+                    )
 
             if higher_peers:
                 got_ok = self.ok_received.wait(ELECTION_TIMEOUT)
@@ -137,10 +143,12 @@ class Node:
                     and self.leader_id > self.node_id
                 )
 
-            if not got_ok and not higher_leader_exists:
-                self.declare_leader()
+            if higher_leader_exists:
+                return
 
-            elif got_ok:
+            if not got_ok:
+                self.declare_leader()
+            else:
                 print(
                     f"[Node {self.node_id}] "
                     "Menerima OK, menunggu COORDINATOR"
@@ -154,8 +162,19 @@ class Node:
         # TODO 3: set self.leader_id = self.node_id, lalu kirim "COORDINATOR"
         # ke SEMUA peer (bukan cuma yang lebih tinggi).
         with self.lock:
+            if (
+                self.leader_id is not None
+                and self.leader_id > self.node_id
+            ):
+                return
+
             self.leader_id = self.node_id
-        print(f"[Node {self.node_id}] TODO: broadcast COORDINATOR, saya jadi leader")
+
+        print(
+            f"[Node {self.node_id}] Menjadi leader, mengirim COORDINATOR ke semua peer"
+        )
+        for peer_id, peer_port in self.peers.items():
+            self.send_message(peer_port, "COORDINATOR")
 
     def monitor_leader(self):
         """Loop periodik: cek apakah leader masih hidup, trigger election jika mati."""
@@ -165,6 +184,31 @@ class Node:
             # (mis. kirim pesan "PING" atau cukup coba connect). Jika gagal
             # (leader mati) dan node ini belum tahu leader baru, panggil
             # start_election().
+            with self.lock:
+                current_leader = self.leader_id
+
+            if current_leader is None:
+                continue
+
+            if current_leader == self.node_id:
+                continue
+
+            leader_port = self.peers.get(current_leader)
+
+            if leader_port is None:
+                continue
+
+            alive = self.send_message(leader_port, "PING")
+
+            if not alive:
+                print(
+                f"[Node {self.node_id}] "
+                f"Leader {current_leader} tidak merespons"
+            )
+                with self.lock:
+                    if self.leader_id == current_leader:
+                        self.leader_id = None
+                self.start_election()
             pass
 
 
