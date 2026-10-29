@@ -157,7 +157,7 @@ flowchart LR
     KL -.-> N40
 ```
 
-## 3. Skenario Join/Leave dan Bukti Output Program
+## 3. Skenario Join/Leave dan Bukti Output Program (Laura Saragih)
 
 ### 3.1 Hasil sebelum dan sesudah node baru bergabung
 
@@ -199,6 +199,7 @@ Output membuktikan bahwa alamat IP kurir tetap dapat ditemukan setelah perubahan
 ```
 
 **Catatan batasan implementasi:** Pada kode ini, semua mapping disimpan dalam satu dictionary `self.data`. Maka, perpindahan pada output merupakan perubahan **tanggung jawab logis menurut successor**, bukan transfer data fisik antarserver. Simulasi ini juga belum mencakup komunikasi jaringan antarnode, finger table, dan replikasi data.
+
 
 ## Ringkasan tanggung jawab akhir
 
