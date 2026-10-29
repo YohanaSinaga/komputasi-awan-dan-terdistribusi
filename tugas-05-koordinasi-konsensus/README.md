@@ -22,6 +22,7 @@ Skeleton yang disediakan (`src/node.py`) sudah menangani bagian **infrastruktur 
 ### Cara Menjalankan
 
 Buka 5 terminal terpisah (satu per node):
+
 ```bash
 python3 src/node.py --id 1 --port 5001 --peers 5002,5003,5004,5005
 python3 src/node.py --id 2 --port 5002 --peers 5001,5003,5004,5005
@@ -47,14 +48,16 @@ tugas-05-koordinasi-konsensus/
 └── bukti/          # Log/screenshot skenario start normal & leader mati
 ```
 
+
+
 ## Rubrik Penilaian (Tugas 5)
 
-| Komponen | Bobot | Kriteria |
-|---|---|---|
-| Implementasi Bully Algorithm benar | 35% | Election, OK, COORDINATOR message bekerja sesuai aturan algoritma |
-| Bukti skenario leader mati → re-election | 30% | Log jelas menunjukkan leader baru terpilih otomatis |
-| Analisis (kenapa perlu leader, trade-off Bully vs Raft) | 20% | Dikaitkan ke masalah urutan pesanan di skenario FoodGo |
-| Proses & kontribusi kelompok | 15% | `JURNAL.md`, commit history |
+| Komponen                                                | Bobot | Kriteria                                                          |
+| ------------------------------------------------------- | ----- | ----------------------------------------------------------------- |
+| Implementasi Bully Algorithm benar                      | 35%   | Election, OK, COORDINATOR message bekerja sesuai aturan algoritma |
+| Bukti skenario leader mati → re-election               | 30%   | Log jelas menunjukkan leader baru terpilih otomatis               |
+| Analisis (kenapa perlu leader, trade-off Bully vs Raft) | 20%   | Dikaitkan ke masalah urutan pesanan di skenario FoodGo            |
+| Proses & kontribusi kelompok                            | 15%   | `JURNAL.md`, commit history                                     |
 
 ## Batasan Penggunaan AI (Level 2)
 

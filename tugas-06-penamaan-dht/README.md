@@ -11,6 +11,7 @@ Pelanggan FoodGo kesulitan menemukan alamat IP server kurir yang **dinamis** (ku
 Implementasikan **simulasi Chord DHT** sederhana (single-process, tidak perlu jaringan sungguhan — cukup simulasi struktur data & algoritma di satu program Python) yang memetakan ID Kurir ke alamat IP mereka.
 
 Konsep yang harus terlihat jalan dalam simulasi kalian:
+
 1. **Consistent hashing**: ID Kurir dan ID Node di-hash ke ruang angka yang sama (mis. 0–255 untuk kesederhanaan, `m=8` bit).
 2. **Ring topology**: node-node diurutkan melingkar berdasarkan hasil hash-nya.
 3. **Lookup**: fungsi `lookup(kurir_id)` yang menemukan node mana yang bertanggung jawab menyimpan mapping ID Kurir tersebut → alamat IP-nya (aturan Chord: node dengan ID hash **terkecil yang lebih besar atau sama dengan** hash key, disebut *successor*).
@@ -30,6 +31,126 @@ python3 src/chord_simulation.py
 2. Gambarkan (boleh pakai Mermaid, lihat Tugas 2) ring topology dari simulasi kalian, tandai node mana yang bertanggung jawab atas ID Kurir mana.
 3. Jelaskan apa yang terjadi pada mapping saat sebuah node **keluar** dari ring (siapa yang mengambil alih tanggung jawabnya) — dukung dengan output program.
 
+### Jawaban
+
+## 2. **Ring Topology dan Tanggung Jawab ID Kurir(Yohana Sinaga)**
+
+Aturan Chord yang digunakan: pilih node dengan ID terkecil yang lebih besar atau sama dengan hash key. Jika tidak ada node yang memenuhi syarat, pencarian kembali ke node ber-ID terkecil ( *wrap-around* ). Panah solid pada diagram menunjukkan urutan node di ring, sedangkan panah putus-putus menunjukkan node successor yang bertanggung jawab atas mapping kurir.
+
+### 2.1 Kondisi awal
+
+```mermaid
+flowchart LR
+    subgraph KEYS["ID Kurir dan Alamat IP"]
+        direction TB
+        K2["kurir-002<br/>Hash: 28<br/>IP: 192.168.1.11"]
+        K1["kurir-001<br/>Hash: 50<br/>IP: 192.168.1.10"]
+        K3["kurir-003<br/>Hash: 132<br/>IP: 192.168.1.12"]
+        KU["kurir-uji-23<br/>Hash: 119<br/>IP: 192.168.1.23"]
+        KL["kurir-leave-14<br/>Hash: 151<br/>IP: 192.168.1.14"]
+    end
+
+    subgraph RING["Chord Ring 8-bit (0–255) — Kondisi Awal"]
+        direction LR
+        N40(("node-bandung-1<br/>ID: 40"))
+        N102(("node-jakarta-2<br/>ID: 102"))
+        N136(("node-surabaya-1<br/>ID: 136"))
+        N177(("node-jakarta-1<br/>ID: 177"))
+        N40 --> N102
+        N102 --> N136
+        N136 --> N177
+        N177 -->|"Wrap-around"| N40
+    end
+
+    K2 -.-> N40
+    K1 -.-> N102
+    K3 -.-> N136
+    KU -.-> N136
+    KL -.-> N177
+```
+
+### 2.2 Setelah Node Baru Bergabung (Join)
+
+`node-medan-1` (ID 123, IP `10.0.0.5`) bergabung di antara node 102 dan 136. Hash `kurir-uji-23` adalah 119, sehingga successor-nya berubah dari node 136 menjadi node 123.
+
+```mermaid
+
+flowchart LR
+    subgraph KEYS["ID Kurir dan Alamat IP"]
+        direction TB
+        K2["kurir-002<br/>Hash: 28<br/>IP: 192.168.1.11"]
+        K1["kurir-001<br/>Hash: 50<br/>IP: 192.168.1.10"]
+        KU["kurir-uji-23<br/>Hash: 119<br/>IP: 192.168.1.23"]
+        K3["kurir-003<br/>Hash: 132<br/>IP: 192.168.1.12"]
+        KL["kurir-leave-14<br/>Hash: 151<br/>IP: 192.168.1.14"]
+    end
+
+    subgraph RING["Chord Ring 8-bit (0-255) - Setelah Join"]
+        direction LR
+        N40(("node-bandung-1<br/>ID: 40"))
+        N102(("node-jakarta-2<br/>ID: 102"))
+        N123(("node-medan-1<br/>ID: 123"))
+        N136(("node-surabaya-1<br/>ID: 136"))
+        N177(("node-jakarta-1<br/>ID: 177"))
+
+        N40 --> N102
+        N102 --> N123
+        N123 --> N136
+        N136 --> N177
+        N177 -->|"Wrap-around"| N40
+    end
+
+    K2 -.-> N40
+    K1 -.-> N102
+    KU -.-> N123
+    K3 -.-> N136
+    KL -.-> N177
+```
+
+### 2.3 Kondisi Akhir Setelah Node Keluar (Leave)
+
+Setelah `node-jakarta-1` (ID 177) keluar, `kurir-leave-14` (hash 151) tidak lagi memiliki node successor di atas atau sama dengan 151. Pencarian berputar kembali ke node terkecil, yaitu node 40.
+
+```mermaid
+flowchart LR
+    subgraph KEYS["ID Kurir dan Alamat IP"]
+        direction TB
+        K2["kurir-002<br/>Hash: 28<br/>IP: 192.168.1.11"]
+        K1["kurir-001<br/>Hash: 50<br/>IP: 192.168.1.10"]
+        KU["kurir-uji-23<br/>Hash: 119<br/>IP: 192.168.1.23"]
+        K3["kurir-003<br/>Hash: 132<br/>IP: 192.168.1.12"]
+        KL["kurir-leave-14<br/>Hash: 151<br/>IP: 192.168.1.14"]
+    end
+
+    subgraph RING["Chord Ring 8-bit (0-255) - Kondisi Akhir"]
+        direction LR
+        N40(("node-bandung-1<br/>ID: 40"))
+        N102(("node-jakarta-2<br/>ID: 102"))
+        N123(("node-medan-1<br/>ID: 123"))
+        N136(("node-surabaya-1<br/>ID: 136"))
+
+        N40 --> N102
+        N102 --> N123
+        N123 --> N136
+        N136 -->|"Wrap-around"| N40
+    end
+
+    K2 -.-> N40
+    K1 -.-> N102
+    KU -.-> N123
+    K3 -.-> N136
+    KL -.-> N40
+```
+
+## Ringkasan tanggung jawab akhir
+
+| Node                | ID node | Mapping kurir yang menjadi tanggung jawab           |
+| ------------------- | ------- | --------------------------------------------------- |
+| `node-bandung-1`  | 40      | `kurir-002`(hash 28),`kurir-leave-14`(hash 151) |
+| `node-jakarta-2`  | 102     | `kurir-001`(hash 50)                              |
+| `node-medan-1`    | 123     | `kurir-uji-23`(hash 119)                          |
+| `node-surabaya-1` | 136     | `kurir-003`(hash 132)                             |
+
 ## Struktur Submission
 
 ```
@@ -43,12 +164,12 @@ tugas-06-penamaan-dht/
 
 ## Rubrik Penilaian (Tugas 6)
 
-| Komponen | Bobot | Kriteria |
-|---|---|---|
-| Implementasi lookup/join/leave benar | 35% | Consistent hashing & successor lookup sesuai aturan Chord |
-| Bukti perubahan topologi (join/leave) | 25% | Output menunjukkan mapping berpindah dengan benar |
-| Analisis kenapa DHT vs flat naming/DNS | 25% | Argumen spesifik ke kasus IP kurir dinamis, bukan definisi umum |
-| Proses & kontribusi kelompok | 15% | `JURNAL.md`, commit history |
+| Komponen                               | Bobot | Kriteria                                                        |
+| -------------------------------------- | ----- | --------------------------------------------------------------- |
+| Implementasi lookup/join/leave benar   | 35%   | Consistent hashing & successor lookup sesuai aturan Chord       |
+| Bukti perubahan topologi (join/leave)  | 25%   | Output menunjukkan mapping berpindah dengan benar               |
+| Analisis kenapa DHT vs flat naming/DNS | 25%   | Argumen spesifik ke kasus IP kurir dinamis, bukan definisi umum |
+| Proses & kontribusi kelompok           | 15%   | `JURNAL.md`, commit history                                   |
 
 ## Batasan Penggunaan AI (Level 2)
 
