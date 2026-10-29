@@ -33,6 +33,23 @@ python3 src/chord_simulation.py
 
 ### Jawaban
 
+
+## 1. Analisis DHT/Chord dibandingkan Flat Naming dan DNS Konvensional (yohanna purnomo)
+
+
+
+FoodGo membutuhkan pemetaan **ID kurir yang tetap** ke **alamat IP yang dapat berubah** karena kurir dapat berpindah lokasi atau jaringan. DHT (*Distributed Hash Table*), khususnya Chord, cocok untuk disimulasikan pada kasus ini karena ID kurir dan ID node di-hash ke ruang ID yang sama, lalu aturan *successor* menentukan node yang bertanggung jawab atas suatu mapping.
+
+### Dibandingkan flat naming dengan tabel pusat
+
+Tabel pusat IDâ†’IP mudah dipahami, tetapi semua lookup dan pembaruan alamat bergantung pada satu komponen. Jika server pusat mengalami gangguan, proses pencarian bisa terhenti; jika banyak kurir memperbarui alamat IP, server tersebut juga dapat menjadi *bottleneck*. Chord membagi tanggung jawab key di antara node-node pada ring sehingga tidak memerlukan satu tabel pusat untuk seluruh pemetaan.
+
+### Dibandingkan DNS konvensional
+
+DNS menerjemahkan nama domain ke alamat IP dan menggunakan infrastruktur terdistribusi. Namun, pada simulasi FoodGo ini, Chord memperlihatkan secara eksplisit bagaimana hash ID kurir menentukan node successor dan bagaimana tanggung jawab tersebut berubah saat node bergabung atau keluar. DNS tetap dapat dipakai dalam sistem nyata, tetapi perubahan IP, TTL cache, dan propagasi pembaruan perlu dikelola agar klien tidak terus menggunakan alamat lama. Jadi, Chord bukan pengganti mutlak DNS; Chord mendemonstrasikan pembagian tanggung jawab berdasarkan hash untuk kasus ini.
+
+Pada output program, ketika node ID 123 bergabung, tanggung jawab `kurir-uji-23` (hash 119) berpindah dari node 136 ke node 123. Ketika node ID 177 keluar, tanggung jawab `kurir-leave-14` (hash 151) berpindah dari node 177 ke node 40. Hasil ini memperlihatkan perubahan tanggung jawab sesuai aturan successor.
+
 ## 2. **Ring Topology dan Tanggung Jawab ID Kurir(Yohana Sinaga)**
 
 Aturan Chord yang digunakan: pilih node dengan ID terkecil yang lebih besar atau sama dengan hash key. Jika tidak ada node yang memenuhi syarat, pencarian kembali ke node ber-ID terkecil ( *wrap-around* ). Panah solid pada diagram menunjukkan urutan node di ring, sedangkan panah putus-putus menunjukkan node successor yang bertanggung jawab atas mapping kurir.
