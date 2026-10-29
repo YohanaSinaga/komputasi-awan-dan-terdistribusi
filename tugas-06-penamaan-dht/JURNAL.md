@@ -1,4 +1,3 @@
-
 # Jurnal Proses — Tugas 6
 
 ## Implementasi find_successor(Yohana Sinaga)
@@ -13,9 +12,20 @@
 --- Node baru bergabung ---
 Node 'node-medan-1' (id=123) bergabung, alamat 10.0.0.5
   Mapping kurir-uji-23 (192.168.1.23) berpindah ke node 123
-kurir-uji-23 -> 192.168.1.23 
+kurir-uji-23 -> 192.168.1.23
 
-- Hasil sebelum & sesudah node keluar: ...
+- Hasil sebelum & sesudah node keluar: Sebelum node keluar, `node-jakarta-1` dengan ID 177 bertanggung jawab atas mapping `kurir-leave-14`, yang memiliki hash 151 dan IP `192.168.1.14`. Setelah node 177 keluar dari ring, tidak ada node tersisa dengan ID lebih besar atau sama dengan 151. Oleh karena itu, fungsi `find_successor()` melakukan *wrap-around* ke node dengan ID terkecil, yaitu `node-bandung-1` dengan ID 40. Mapping `kurir-leave-14` pun berpindah tanggung jawab dari node 177 ke node 40. Lookup setelah node keluar tetap menghasilkan IP kurir yang sesuai.
+
+  **Output program:**
+
+```text
+  --- Sebuah node keluar ---
+  Node 'node-jakarta-1' (id=177) keluar dari ring
+    Mapping kurir-leave-14 (192.168.1.14) berpindah ke node 40
+  kurir-leave-14 -> 192.168.1.14
+  kurir-001 -> 192.168.1.10
+  kurir-002 -> 192.168.1.11
+```
 
 ## Log Penggunaan AI (Level 2)
 

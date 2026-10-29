@@ -33,10 +33,7 @@ python3 src/chord_simulation.py
 
 ### Jawaban
 
-
 ## 1. Analisis DHT/Chord dibandingkan Flat Naming dan DNS Konvensional (yohanna purnomo)
-
-
 
 FoodGo membutuhkan pemetaan **ID kurir yang tetap** ke **alamat IP yang dapat berubah** karena kurir dapat berpindah lokasi atau jaringan. DHT (*Distributed Hash Table*), khususnya Chord, cocok untuk disimulasikan pada kasus ini karena ID kurir dan ID node di-hash ke ruang ID yang sama, lalu aturan *successor* menentukan node yang bertanggung jawab atas suatu mapping.
 
@@ -50,7 +47,7 @@ DNS menerjemahkan nama domain ke alamat IP dan menggunakan infrastruktur terdist
 
 Pada output program, ketika node ID 123 bergabung, tanggung jawab `kurir-uji-23` (hash 119) berpindah dari node 136 ke node 123. Ketika node ID 177 keluar, tanggung jawab `kurir-leave-14` (hash 151) berpindah dari node 177 ke node 40. Hasil ini memperlihatkan perubahan tanggung jawab sesuai aturan successor.
 
-## 2. **Ring Topology dan Tanggung Jawab ID Kurir(Yohana Sinaga)**
+## **2. Ring Topology dan Tanggung Jawab ID Kurir(Yohana Sinaga)**
 
 Aturan Chord yang digunakan: pilih node dengan ID terkecil yang lebih besar atau sama dengan hash key. Jika tidak ada node yang memenuhi syarat, pencarian kembali ke node ber-ID terkecil ( *wrap-around* ). Panah solid pada diagram menunjukkan urutan node di ring, sedangkan panah putus-putus menunjukkan node successor yang bertanggung jawab atas mapping kurir.
 
@@ -129,6 +126,7 @@ flowchart LR
 Setelah `node-jakarta-1` (ID 177) keluar, `kurir-leave-14` (hash 151) tidak lagi memiliki node successor di atas atau sama dengan 151. Pencarian berputar kembali ke node terkecil, yaitu node 40.
 
 ```mermaid
+
 flowchart LR
     subgraph KEYS["ID Kurir dan Alamat IP"]
         direction TB
@@ -158,6 +156,49 @@ flowchart LR
     K3 -.-> N136
     KL -.-> N40
 ```
+
+## 3. Skenario Join/Leave dan Bukti Output Program
+
+### 3.1 Hasil sebelum dan sesudah node baru bergabung
+
+Sebelum join, node ID 123 belum ada. Hash `kurir-uji-23` adalah 119, sehingga successor-nya node 136. Setelah `node-medan-1` (ID 123) bergabung, successor pertama yang memiliki ID lebih besar atau sama dengan 119 adalah node 123. Mapping tersebut berubah tanggung jawab dari node 136 ke node 123.
+
+Output program:
+
+```text
+--- Node baru bergabung ---
+Node 'node-medan-1' (id=123) bergabung, alamat 10.0.0.5
+  Mapping kurir-uji-23 (192.168.1.23) berpindah ke node 123
+kurir-uji-23 -> 192.168.1.23
+```
+
+### 3.2 Hasil sebelum dan sesudah node keluar
+
+Sebelum leave, `kurir-leave-14` memiliki hash 151 dan successor node 177 (`node-jakarta-1`). Setelah node ID 177 keluar, node successor dengan ID yang lebih besar atau sama dengan 151 tidak ada lagi. Fungsi `find_successor()` melakukan *wrap-around* ke node dengan ID terkecil, yaitu node 40 (`node-bandung-1`). Karena itu, tanggung jawab logis mapping berpindah dari node 177 ke node 40.
+
+Output program:
+
+```text
+--- Sebuah node keluar ---
+Node 'node-jakarta-1' (id=177) keluar dari ring
+  Mapping kurir-leave-14 (192.168.1.14) berpindah ke node 40
+kurir-leave-14 -> 192.168.1.14
+kurir-001 -> 192.168.1.10
+kurir-002 -> 192.168.1.11
+```
+
+Output membuktikan bahwa alamat IP kurir tetap dapat ditemukan setelah perubahan topologi. Yang berubah dalam simulasi adalah node successor yang bertanggung jawab atas mapping.
+
+### 3.3 Tabel ringkasan perubahan
+
+```
+| Perubahan topologi | Mapping | Sebelum | Sesudah |
+|---|---|---:|---:|
+| `node-medan-1` (ID 123) bergabung | `kurir-uji-23` (hash 119) | Node 136 | Node 123 |
+| `node-jakarta-1` (ID 177) keluar | `kurir-leave-14` (hash 151) | Node 177 | Node 40 |
+```
+
+**Catatan batasan implementasi:** Pada kode ini, semua mapping disimpan dalam satu dictionary `self.data`. Maka, perpindahan pada output merupakan perubahan **tanggung jawab logis menurut successor**, bukan transfer data fisik antarserver. Simulasi ini juga belum mencakup komunikasi jaringan antarnode, finger table, dan replikasi data.
 
 ## Ringkasan tanggung jawab akhir
 
