@@ -16,6 +16,30 @@ Data saldo *e-wallet* pelanggan FoodGo berbeda antara server wilayah **Jakarta**
 
 JAWAB :
 
+### 1. Pemilihan model konsistensi (LAURA CHYNDEARNI SARAGIH)
+
+Kasus saldo e-wallet FoodGo **tidak cukup ditangani dengan Eventual Consistency saja**. Eventual Consistency memperbolehkan replika memiliki data yang berbeda untuk sementara waktu. Replika baru akan memiliki data yang sama setelah tidak ada pembaruan baru dan seluruh pembaruan selesai dipropagasikan.
+
+Model tersebut cocok untuk data yang dampak keterlambatannya rendah, misalnya jumlah *like* di media sosial. Jika jumlah *like* di Jakarta dan Bandung berbeda selama beberapa detik, dampak bisnisnya relatif kecil. Sebaliknya, saldo e-wallet adalah data keuangan. Saldo yang terbaca lebih rendah dapat menyebabkan transaksi pelanggan ditolak, sedangkan saldo yang terbaca lebih tinggi berisiko menyebabkan pengeluaran melebihi saldo sebenarnya apabila dipakai tanpa validasi transaksi yang benar.
+
+Sequential Consistency memberikan jaminan urutan global: hasil eksekusi harus sama dengan suatu urutan sekuensial yang mempertahankan urutan operasi setiap proses. Jaminan ini lebih kuat daripada Eventual Consistency, tetapi penerapannya dapat membutuhkan koordinasi antarreplika dan berdampak pada kinerja serta skalabilitas.
+
+Untuk ruang lingkup masalah yang diberikan, pendekatan yang dipilih adalah **Eventual Consistency untuk replikasi umum, ditambah Client-Centric Consistency berupa Read-Your-Writes untuk sesi pelanggan**. Jadi, kita tidak menganggap Eventual Consistency saja sudah cukup. Pelanggan yang baru melakukan top-up harus dapat membaca hasil top-up tersebut meskipun membaca melalui server Bandung sebelum replikasi selesai.
+
+Catatan: Read-Your-Writes menjamin pelanggan melihat efek tulisannya sendiri, bukan menjamin seluruh transaksi keuangan aman terhadap dua pembelian bersamaan. Saat melakukan debit/pemesanan, FoodGo tetap harus memvalidasi saldo dan melakukan pengurangan saldo secara atomik pada sumber data yang berwenang/terkoordinasi agar saldo tidak terpakai dua kali.
+
+### 2. Usulan Client-Centric Consistency: Read-Your-Writes (LAURA CHYNDEARNI SARAGIH)
+
+Setiap operasi penulisan saldo diberi nomor versi. Setelah top-up berhasil di server Jakarta, aplikasi menyimpan versi minimum yang harus terlihat oleh pelanggan tersebut (`versi_minimal`). Ketika pelanggan meminta saldo melalui server Bandung:
+
+1. Client mengirim `user_id` dan `versi_minimal`.
+2. Server Bandung memeriksa versi saldo lokal.
+3. Jika versi Bandung sudah sama atau lebih besar dari `versi_minimal`, Bandung boleh mengembalikan saldo lokal.
+4. Jika versi Bandung masih lebih kecil, server tidak boleh mengembalikan saldo lama. Pada simulasi ini, permintaan dialihkan ke server Jakarta sebagai server yang sudah memiliki versi terbaru.
+5. Setelah replikasi selesai, Bandung juga memiliki versi tersebut dan dapat melayani pembacaan berikutnya.
+
+Dengan demikian, efek operasi `top_up` oleh pelanggan selalu terlihat pada pembacaan berikutnya oleh pelanggan yang sama. Mekanisme ini sesuai dengan definisi Read-Your-Writes pada materi: efek operasi write oleh suatu proses pada data item harus terlihat pada operasi read berikutnya oleh proses yang sama.
+
 ### 3. Sequence diagram (YOHANNA PURNOMO)
 
 #### A. Tanpa jaminan Read-Your-Writes (bug terjadi)
@@ -39,8 +63,6 @@ sequenceDiagram
 ```
 
 ## B. Dengan Read-Your-Writes (bug teratasi)
-
-
 
 ```mermaid
 sequenceDiagram
