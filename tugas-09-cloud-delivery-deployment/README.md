@@ -182,6 +182,53 @@ Apabila pusat data utama mengalami kerusakan perangkat keras, gangguan listrik, 
 
 ### 4. Perbandingan dengan Alternatif yang Ditolak (LAURA CHYNDEARNI)
 
+Alternatif yang dipertimbangkan adalah **Public Cloud**.
+
+Public Cloud memiliki kelebihan berupa skalabilitas tinggi, penyediaan sumber daya yang cepat, dan biaya awal yang relatif rendah. Model ini dapat membantu sistem menghadapi lonjakan permintaan tanpa harus menyediakan seluruh kapasitas infrastruktur sendiri.
+
+Namun, Public Cloud kurang sesuai untuk Sistem Data Kependudukan karena infrastruktur disediakan dan dikelola oleh penyedia eksternal. Hal tersebut tidak sesuai dengan persyaratan studi kasus bahwa data tidak boleh berada pada infrastruktur yang tidak sepenuhnya dikendalikan oleh negara.
+
+Selain itu, penggunaan infrastruktur bersama dengan organisasi lain memerlukan perhatian tambahan terhadap batas keamanan dan pengelolaan data sensitif.
+
+Oleh karena itu, Public Cloud ditolak sebagai model utama meskipun memiliki keunggulan dalam hal elastisitas dan kemudahan penyediaan sumber daya.
+
+### 5. Counter-Scenario
+
+Sebagai pengujian terhadap keputusan yang diambil, diasumsikan terjadi peningkatan jumlah permintaan hingga 10 kali lipat dari kondisi normal saat pendaftaran sekolah secara serentak.
+
+Dalam kondisi tersebut, Private Cloud berpotensi mengalami keterbatasan kapasitas apabila pemerintah tidak menyiapkan sumber daya yang cukup sejak awal.
+
+Salah satu alternatif yang dapat dipertimbangkan adalah Hybrid Cloud. Beban kerja yang tidak mengolah data sensitif dapat ditempatkan pada Public Cloud, sedangkan database utama dan data biometrik tetap berada pada Private Cloud.
+
+Namun, pendekatan ini memiliki risiko tambahan, seperti:
+
+- Potensi kebocoran data ketika terjadi pertukaran informasi antarlingkungan cloud.
+- Kompleksitas pengamanan koneksi antara Private Cloud dan Public Cloud.
+- Risiko ketidaksesuaian atau keterlambatan sinkronisasi data.
+- Pengelolaan sistem yang lebih kompleks.
+
+Berdasarkan pertimbangan tersebut, untuk kondisi studi kasus saat ini, Private Cloud tetap menjadi pilihan utama. Pemerintah perlu mengantisipasi lonjakan permintaan dengan menyiapkan kapasitas cadangan, horizontal scaling, load balancer, dan pengujian beban secara berkala.
+
+Hybrid Cloud dapat dipertimbangkan kembali apabila kebutuhan skalabilitas meningkat dan terdapat kebijakan yang jelas mengenai pemisahan data sensitif dan non-sensitif.
+
+### 6. Kesimpulan
+
+Berdasarkan analisis kebutuhan Sistem Data Kependudukan, model deployment yang paling sesuai adalah **Private Cloud** karena memberikan kontrol yang lebih besar terhadap infrastruktur dan pengelolaan data sensitif oleh pemerintah.
+
+Untuk service model, kombinasi IaaS dan PaaS digunakan pada komponen inti sistem, sedangkan SaaS hanya digunakan untuk kebutuhan pendukung yang tidak mengolah data kependudukan sensitif dan telah memenuhi kebijakan keamanan pemerintah.
+
+Risiko utama yang perlu diperhatikan meliputi kebocoran data, keterbatasan kapasitas, dan gangguan pusat data. Risiko tersebut dapat dikurangi melalui penerapan kontrol akses, enkripsi, monitoring, horizontal scaling, backup, dan Disaster Recovery Plan.
+
+Meskipun Private Cloud memiliki keterbatasan dalam elastisitas dibandingkan Public Cloud, model ini paling sesuai dengan kebutuhan keamanan dan kontrol infrastruktur dalam studi kasus Sistem Data Kependudukan.
+
+| Aspek                         | Private Cloud (Dipilih)                             | Public Cloud (Ditolak)                                       |
+| ----------------------------- | --------------------------------------------------- | ------------------------------------------------------------ |
+| Kontrol infrastruktur         | Tinggi, dikelola pemerintah                         | Bergantung pada penyedia eksternal                           |
+| Kerahasiaan data              | Lebih mudah disesuaikan dengan kebijakan pemerintah | Membutuhkan pengaturan tambahan terhadap lingkungan penyedia |
+| Skalabilitas                  | Bergantung pada kapasitas yang disediakan           | Sangat tinggi dan fleksibel                                  |
+| Biaya awal                    | Relatif tinggi                                      | Relatif rendah                                               |
+| Kesesuaian dengan studi kasus | Sangat sesuai                                       | Kurang sesuai                                                |
+
 ## Struktur Submission
 
 ```
