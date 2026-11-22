@@ -80,7 +80,6 @@ Contohnya, pemerintah dapat memantau penggunaan CPU, memori, kapasitas penyimpan
 
 Pengukuran ini tidak harus selalu berkaitan dengan pembayaran berdasarkan penggunaan, tetapi juga dapat digunakan untuk kebutuhan monitoring dan evaluasi.
 
-
 ### 2. Rekomendasi Service Model (YOHANNA PURNOMO)
 
 Untuk Sistem Data Kependudukan, service model yang direkomendasikan adalah kombinasi IaaS, PaaS, dan SaaS sesuai fungsi masing-masing komponen.
@@ -137,13 +136,51 @@ Seluruh komponen inti yang mengolah data kependudukan ditempatkan pada lingkunga
 
 ### 3. Risiko dan Mitigasi (YOHANA SINAGA)
 
+Berikut beberapa risiko yang mungkin terjadi dalam penerapan Private Cloud pada Sistem Data Kependudukan.
 
+#### 3.1 Kebocoran Data dan Akses Tidak Sah
+
+**Risiko:**
+
+Sistem menyimpan data pribadi yang sangat sensitif. Apabila terjadi serangan siber, pencurian kredensial, atau penyalahgunaan hak akses oleh pihak internal, data kependudukan dapat diakses dan disalahgunakan oleh pihak yang tidak berwenang.
+
+**Mitigasi:**
+
+- Menerapkan Role-Based Access Control (RBAC) agar setiap pengguna hanya dapat mengakses data sesuai kewenangannya.
+- Menggunakan Multi-Factor Authentication (MFA) untuk memperkuat proses autentikasi.
+- Melakukan enkripsi data saat disimpan (at rest) dan saat dikirim melalui jaringan (in transit).
+- Menyimpan audit log untuk mencatat aktivitas pengguna.
+- Melakukan monitoring dan evaluasi keamanan secara berkala.
+
+#### 3.2 Keterbatasan Kapasitas Infrastruktur
+
+**Risiko:**
+
+Ketika terjadi peningkatan permintaan secara bersamaan, seperti saat pemilu atau pendaftaran sekolah, kapasitas server dapat menjadi tidak mencukupi sehingga menyebabkan sistem melambat atau mengalami downtime.
+
+**Mitigasi:**
+
+- Menerapkan horizontal scaling dengan menambahkan server sesuai kebutuhan.
+- Menggunakan load balancer untuk membagi permintaan ke beberapa server.
+- Melakukan monitoring penggunaan CPU, memori, jaringan, dan penyimpanan.
+- Menyediakan kapasitas cadangan untuk menghadapi lonjakan permintaan.
+- Melakukan load testing sebelum periode penggunaan tinggi.
+
+#### 3.3 Gangguan pada Pusat Data
+
+**Risiko:**
+
+Apabila pusat data utama mengalami kerusakan perangkat keras, gangguan listrik, bencana, atau gangguan jaringan, layanan Sistem Data Kependudukan dapat berhenti beroperasi.
+
+**Mitigasi:**
+
+- Menyediakan pusat data cadangan yang tetap berada dalam kendali pemerintah.
+- Melakukan backup data secara berkala.
+- Menerapkan replikasi data ke pusat data cadangan.
+- Menyusun Disaster Recovery Plan (DRP).
+- Melakukan pengujian pemulihan sistem secara berkala.
 
 ### 4. Perbandingan dengan Alternatif yang Ditolak (LAURA CHYNDEARNI)
-
-
-
-
 
 ## Struktur Submission
 
