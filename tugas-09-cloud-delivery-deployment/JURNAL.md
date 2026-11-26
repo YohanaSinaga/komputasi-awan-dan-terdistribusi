@@ -14,7 +14,7 @@
 - **Pertimbangan skalabilitas:** Private Cloud memiliki keterbatasan kapasitas dibandingkan Public Cloud. Untuk mengantisipasi lonjakan permintaan saat pemilu atau pendaftaran sekolah, pemerintah perlu menyiapkan kapasitas cadangan, menerapkan horizontal scaling, menggunakan load balancer, serta melakukan monitoring dan load testing.
 - **Counter-scenario:** Jika jumlah permintaan meningkat hingga 10 kali lipat, Hybrid Cloud dapat dipertimbangkan untuk menangani beban kerja non-sensitif pada Public Cloud, sementara database utama dan data biometrik tetap berada di Private Cloud. Namun, opsi ini belum dipilih sebagai model utama karena menambah risiko pertukaran data, sinkronisasi, dan kompleksitas pengelolaan.
 
-## Diskusi service model per komponen (LAURA)
+## Diskusi service model per komponen (Kholifa)
 
 - Opsi yang dipertimbangkan:
   - **Public Cloud:** Memiliki skalabilitas tinggi dan sumber daya dapat disediakan dengan cepat. Namun, infrastrukturnya dikelola oleh penyedia eksternal sehingga kurang sesuai dengan kebutuhan sistem yang mengharuskan data berada pada infrastruktur yang sepenuhnya dikendalikan negara.
